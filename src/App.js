@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
-import SortableTree from 'react-sortable-tree';
+import { DragDropContext } from 'react-dnd';
+import MultiBackend from 'react-dnd-multi-backend';
+import HTML5toTouch from 'react-dnd-multi-backend/lib/HTML5toTouch';
+import { SortableTreeWithoutDndContext as SortableTree } from 'react-sortable-tree';
 
 const factorial = [{
     title: 'fn',
@@ -55,4 +58,4 @@ class App extends Component {
     }
 }
 
-export default App;
+export default DragDropContext(MultiBackend(HTML5toTouch))(App);
