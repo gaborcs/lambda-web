@@ -1,21 +1,58 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import SortableTree from 'react-sortable-tree';
+
+const factorial = [{
+    title: 'fn',
+    children: [{
+        title: 'n'
+    }, {
+        title: 'if',
+        children: [{
+            title: '=',
+            children: [{
+                title: 'n'
+            }, {
+                title: 0
+            }]
+        }, {
+            title: 1
+        }, {
+            title: '*',
+            children: [{
+                title: 'n'
+            }, {
+                title: 'factorial',
+                children: [{
+                    title: '-',
+                    children: [{
+                        title: 'n',
+                    }, {
+                        title: 1
+                    }]
+                }]
+            }]
+        }]
+    }]
+}];
 
 class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-      </div>
-    );
-  }
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            treeData: factorial
+        };
+    }
+
+    render() {
+        return (
+            <SortableTree
+                treeData={this.state.treeData}
+                onChange={treeData => this.setState({ treeData })}
+            />
+        );
+    }
 }
 
 export default App;
