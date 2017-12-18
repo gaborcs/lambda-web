@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
-import MultiBackend from 'react-dnd-multi-backend';
-import HTML5toTouch from 'react-dnd-multi-backend/lib/HTML5toTouch';
+import HTML5Backend from 'react-dnd-html5-backend';
+import TouchBackend from 'react-dnd-touch-backend';
+import MultiBackend, { TouchTransition } from 'react-dnd-multi-backend';
 import { SortableTreeWithoutDndContext as SortableTree } from 'react-sortable-tree';
 import Chip from 'material-ui/Chip';
 import { withStyles } from 'material-ui/styles';
@@ -86,4 +87,13 @@ class App extends Component {
     }
 }
 
-export default DragDropContext(MultiBackend(HTML5toTouch))(withStyles(styles)(App));
+const multiBackend = MultiBackend({
+    backends: [{
+        backend: HTML5Backend
+    }, {
+        backend: TouchBackend({delayTouchStart: 1000}),
+        transition: TouchTransition
+    }]
+});
+
+export default DragDropContext(multiBackend)(withStyles(styles)(App));
