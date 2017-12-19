@@ -7,10 +7,11 @@ import { SortableTreeWithoutDndContext as SortableTree } from 'react-sortable-tr
 import Chip from 'material-ui/Chip';
 import { withStyles } from 'material-ui/styles';
 
+const chipHeight = 32;
 const minTouchTargetSize = 48;
 
 const styles = {
-    chipContainer: {
+    nodeContent: {
         height: '100%',
         display: 'flex',
         alignItems: 'center'
@@ -86,12 +87,30 @@ class App extends Component {
     }
 
     renderNodeContent({isDragging, connectDragSource, node}) {
-        return isDragging ? null : connectDragSource(this.renderChip(node.title));
+        let hasChildren = node.children && node.children.length;
+        return (
+            <div className={this.props.classes.nodeContent}>
+                {isDragging ? null : connectDragSource(<div>{this.renderChip(node.title)}</div>)}
+                {hasChildren ? this.renderLineChildren() : null}
+            </div>
+        );
     }
 
     renderChip(label) {
-        let classes = this.props.classes;
-        return <div className={classes.chipContainer}><Chip className={classes.chip} label={label}/></div>;
+        return <Chip className={this.props.classes.chip} label={label}/>;
+    }
+
+    renderLineChildren() {
+        return (
+            <div style={{
+                position: 'absolute',
+                backgroundColor: 'black',
+                width: 1,
+                left: minTouchTargetSize / 2,
+                bottom: 0,
+                height: (minTouchTargetSize - chipHeight) / 2
+            }} />
+        );
     }
 
     generatePreview(type, item, style) {
