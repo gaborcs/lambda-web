@@ -11,6 +11,10 @@ const chipHeight = 32;
 const minTouchTargetSize = 48;
 
 const styles = {
+    app: {
+        height: '100%',
+        userSelect: 'none'
+    },
     nodeContent: {
         height: '100%',
         display: 'flex',
@@ -73,16 +77,22 @@ class App extends Component {
 
     render() {
         return (
-            <div style={{height: '100%'}}>
-                <SortableTree
-                    treeData={this.state.treeData}
-                    onChange={treeData => this.setState({ treeData })}
-                    rowHeight={minTouchTargetSize}
-                    scaffoldBlockPxWidth={minTouchTargetSize}
-                    nodeContentRenderer={this.renderNodeContent.bind(this)}
-                />
-                <Preview generator={this.generatePreview.bind(this)} />
+            <div className={this.props.classes.app}>
+                {this.renderSortableTree()}
+                {this.renderPreview()}
             </div>
+        );
+    }
+
+    renderSortableTree() {
+        return (
+            <SortableTree
+                treeData={this.state.treeData}
+                onChange={treeData => this.setState({ treeData })}
+                rowHeight={minTouchTargetSize}
+                scaffoldBlockPxWidth={minTouchTargetSize}
+                nodeContentRenderer={this.renderNodeContent.bind(this)}
+            />
         );
     }
 
@@ -111,6 +121,10 @@ class App extends Component {
                 height: (minTouchTargetSize - chipHeight) / 2
             }} />
         );
+    }
+
+    renderPreview() {
+        return <Preview generator={this.generatePreview.bind(this)} />;
     }
 
     generatePreview(type, item, style) {
