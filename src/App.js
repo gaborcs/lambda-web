@@ -23,6 +23,14 @@ const styles = {
     },
     chip: {
         minWidth: minTouchTargetSize
+    },
+    lineChildren: {
+        position: 'absolute',
+        backgroundColor: 'black',
+        width: 1,
+        left: minTouchTargetSize / 2,
+        bottom: 0,
+        height: (minTouchTargetSize - chipHeight) / 2
     }
 };
 
@@ -117,16 +125,7 @@ class App extends Component {
 
     hasChildren = node => node.children && node.children.length;
 
-    renderLineChildren = () => (
-        <div style={{
-            position: 'absolute',
-            backgroundColor: 'black',
-            width: 1,
-            left: minTouchTargetSize / 2,
-            bottom: 0,
-            height: (minTouchTargetSize - chipHeight) / 2
-        }} />
-    );
+    renderLineChildren = () => <div className={this.props.classes.lineChildren} />;
 
     renderPreview = () => <Preview generator={this.generatePreview} />;
 
