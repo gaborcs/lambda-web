@@ -3,8 +3,9 @@ import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import TouchBackend from 'react-dnd-touch-backend';
 import MultiBackend, { TouchTransition, Preview } from 'react-dnd-multi-backend';
-import { SortableTreeWithoutDndContext as SortableTree } from 'react-sortable-tree';
+import { SortableTreeWithoutDndContext as SortableTree, removeNodeAtPath } from 'react-sortable-tree';
 import Chip from 'material-ui/Chip';
+import Menu, { MenuItem } from 'material-ui/Menu';
 import { withStyles } from 'material-ui/styles';
 
 const chipHeight = 32;
@@ -71,65 +72,88 @@ class App extends Component {
         super(props);
 
         this.state = {
-            treeData: factorial
+            treeData: factorial,
+            menu: null
         };
     }
 
-    render() {
-        return (
-            <div className={this.props.classes.app}>
-                {this.renderSortableTree()}
-                {this.renderPreview()}
-            </div>
-        );
+    render = () => (
+        <div className={this.props.classes.app}>
+            {this.renderSortableTree()}
+            {this.renderPreview()}
+            {this.state.menu ? this.renderMenu() : null}
+        </div>
+    );
+
+    renderSortableTree = () => (
+        <SortableTree
+            treeData={this.state.treeData}
+            onChange={treeData => this.setState({ treeData })}
+            rowHeight={minTouchTargetSize}
+            scaffoldBlockPxWidth={minTouchTargetSize}
+            nodeContentRenderer={this.renderNodeContent}
+        />
+    );
+
+    renderNodeContent = ({isDragging, connectDragSource, node, path}) => (
+        <div className={this.props.classes.nodeContent}>
+            {isDragging ?
+             null :
+             connectDragSource(<div>{this.renderChip(node.title, this.handleChipClick.bind(this, path))}</div>)}
+            {this.hasChildren(node) ? this.renderLineChildren() : null}
+        </div>
+    );
+
+    renderChip = (label, onClick) => <Chip className={this.props.classes.chip} label={label} onClick={onClick}/>;
+
+    handleChipClick = (path, event) => {
+        this.setState({
+            menu: {
+                path,
+                anchorEl: event.currentTarget
+            }
+        });
     }
 
-    renderSortableTree() {
-        return (
-            <SortableTree
-                treeData={this.state.treeData}
-                onChange={treeData => this.setState({ treeData })}
-                rowHeight={minTouchTargetSize}
-                scaffoldBlockPxWidth={minTouchTargetSize}
-                nodeContentRenderer={this.renderNodeContent.bind(this)}
-            />
-        );
-    }
+    hasChildren = node => node.children && node.children.length;
 
-    renderNodeContent({isDragging, connectDragSource, node}) {
-        let hasChildren = node.children && node.children.length;
-        return (
-            <div className={this.props.classes.nodeContent}>
-                {isDragging ? null : connectDragSource(<div>{this.renderChip(node.title)}</div>)}
-                {hasChildren ? this.renderLineChildren() : null}
-            </div>
-        );
-    }
+    renderLineChildren = () => (
+        <div style={{
+            position: 'absolute',
+            backgroundColor: 'black',
+            width: 1,
+            left: minTouchTargetSize / 2,
+            bottom: 0,
+            height: (minTouchTargetSize - chipHeight) / 2
+        }} />
+    );
 
-    renderChip(label) {
-        return <Chip className={this.props.classes.chip} label={label}/>;
-    }
+    renderPreview = () => <Preview generator={this.generatePreview} />;
 
-    renderLineChildren() {
-        return (
-            <div style={{
-                position: 'absolute',
-                backgroundColor: 'black',
-                width: 1,
-                left: minTouchTargetSize / 2,
-                bottom: 0,
-                height: (minTouchTargetSize - chipHeight) / 2
-            }} />
-        );
-    }
+    generatePreview = (type, item, style) => <div style={style}>{this.renderChip(item.node.title)}</div>;
 
-    renderPreview() {
-        return <Preview generator={this.generatePreview.bind(this)} />;
-    }
+    renderMenu = () => (
+        <Menu anchorEl={this.state.menu.anchorEl} open={true} onClose={this.closeMenu}>
+            <MenuItem onClick={this.removeNode}>Remove</MenuItem>
+        </Menu>
+    );
 
-    generatePreview(type, item, style) {
-        return <div style={style}>{this.renderChip(item.node.title)}</div>;
-    }
+    closeMenu = () => {
+        this.setState({
+            menu: null
+        });
+    };
+
+    removeNode = () => {
+        this.setState(state => ({
+            treeData: removeNodeAtPath({
+                treeData: state.treeData,
+                path: state.menu.path,
+                getNodeKey: ({ treeIndex }) => treeIndex
+            })
+        }));
+        this.closeMenu();
+    };
 }
 
 const multiBackend = MultiBackend({
