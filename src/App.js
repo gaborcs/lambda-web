@@ -5,6 +5,7 @@ import TouchBackend from 'react-dnd-touch-backend';
 import MultiBackend, { TouchTransition, Preview } from 'react-dnd-multi-backend';
 import { SortableTreeWithoutDndContext as SortableTree, removeNodeAtPath } from 'react-sortable-tree';
 import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
+import Chip from 'material-ui/Chip';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import { withStyles } from 'material-ui/styles';
 
@@ -29,16 +30,7 @@ const styles = {
         alignItems: 'center'
     },
     chip: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: chipHeight,
-        padding: '0 12px',
-        minWidth: minTouchTargetSize,
-        borderRadius: chipHeight / 2,
-        fontSize: '.875rem',
-        backgroundColor: '#424242',
-        color: '#fff'
+        minWidth: minTouchTargetSize
     },
     lineChildren: {
         position: 'absolute',
@@ -129,7 +121,7 @@ class App extends Component {
         </div>
     );
 
-    renderChip = (label, onClick) => <div className={this.props.classes.chip} onClick={onClick}>{label}</div>;
+    renderChip = (label, onClick) => <Chip className={this.props.classes.chip} label={label} onClick={onClick} />;
 
     handleChipClick = (path, event) => {
         this.setState({
