@@ -5,5 +5,14 @@ html, body, #root {
 body {
     margin: 0;
     padding: 0;
-    font-family: sans-serif;
+    background-color: #303030;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+}
+
+.rst__lineHalfHorizontalRight::before,
+.rst__lineFullVertical::after,
+.rst__lineHalfVerticalTop::after,
+.rst__lineHalfVerticalBottom::after,
+.custom-line-color {
+    background: #757575;
 }

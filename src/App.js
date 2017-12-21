@@ -4,7 +4,6 @@ import HTML5Backend from 'react-dnd-html5-backend';
 import TouchBackend from 'react-dnd-touch-backend';
 import MultiBackend, { TouchTransition, Preview } from 'react-dnd-multi-backend';
 import { SortableTreeWithoutDndContext as SortableTree, removeNodeAtPath } from 'react-sortable-tree';
-import Chip from 'material-ui/Chip';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import { withStyles } from 'material-ui/styles';
 
@@ -22,11 +21,19 @@ const styles = {
         alignItems: 'center'
     },
     chip: {
-        minWidth: minTouchTargetSize
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: chipHeight,
+        padding: '0 12px',
+        minWidth: minTouchTargetSize,
+        borderRadius: chipHeight / 2,
+        fontSize: '.875rem',
+        backgroundColor: '#424242',
+        color: '#fff'
     },
     lineChildren: {
         position: 'absolute',
-        backgroundColor: 'black',
         width: 1,
         left: minTouchTargetSize / 2,
         bottom: 0,
@@ -112,7 +119,7 @@ class App extends Component {
         </div>
     );
 
-    renderChip = (label, onClick) => <Chip className={this.props.classes.chip} label={label} onClick={onClick}/>;
+    renderChip = (label, onClick) => <div className={this.props.classes.chip} onClick={onClick}>{label}</div>;
 
     handleChipClick = (path, event) => {
         this.setState({
@@ -125,7 +132,7 @@ class App extends Component {
 
     hasChildren = node => node.children && node.children.length;
 
-    renderLineChildren = () => <div className={this.props.classes.lineChildren} />;
+    renderLineChildren = () => <div className={'custom-line-color ' + this.props.classes.lineChildren} />;
 
     renderPreview = () => <Preview generator={this.generatePreview} />;
 
