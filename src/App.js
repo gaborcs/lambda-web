@@ -4,15 +4,23 @@ import HTML5Backend from 'react-dnd-html5-backend';
 import TouchBackend from 'react-dnd-touch-backend';
 import MultiBackend, { TouchTransition, Preview } from 'react-dnd-multi-backend';
 import { SortableTreeWithoutDndContext as SortableTree, removeNodeAtPath } from 'react-sortable-tree';
+import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import { withStyles } from 'material-ui/styles';
 
 const chipHeight = 32;
 const minTouchTargetSize = 48;
 
+const theme = createMuiTheme({
+    palette: {
+        type: 'dark'
+    }
+});
+
 const styles = {
     app: {
         height: '100%',
+        backgroundColor: theme.palette.background.default,
         userSelect: 'none'
     },
     nodeContent: {
@@ -93,11 +101,13 @@ class App extends Component {
     }
 
     render = () => (
-        <div className={this.props.classes.app}>
-            {this.renderSortableTree()}
-            {this.renderPreview()}
-            {this.state.menu ? this.renderMenu() : null}
-        </div>
+        <MuiThemeProvider theme={theme}>
+            <div className={this.props.classes.app}>
+                {this.renderSortableTree()}
+                {this.renderPreview()}
+                {this.state.menu ? this.renderMenu() : null}
+            </div>
+        </MuiThemeProvider>
     );
 
     renderSortableTree = () => (
