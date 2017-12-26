@@ -3,7 +3,7 @@ import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import TouchBackend from 'react-dnd-touch-backend';
 import MultiBackend, { TouchTransition, Preview } from 'react-dnd-multi-backend';
-import { SortableTreeWithoutDndContext as SortableTree, removeNodeAtPath } from 'react-sortable-tree';
+import { SortableTreeWithoutDndContext as SortableTree, removeNodeAtPath, addNodeUnderParent } from 'react-sortable-tree';
 import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
 import Chip from 'material-ui/Chip';
 import Menu, { MenuItem } from 'material-ui/Menu';
@@ -192,6 +192,7 @@ class App extends Component {
         <Menu anchorEl={this.state.menu.anchorEl} open={true} onClose={this.closeMenu}>
             <MenuItem onClick={this.editNode}>Edit</MenuItem>
             <MenuItem onClick={this.removeNode}>Remove</MenuItem>
+            <MenuItem onClick={this.addChildNode}>Add child</MenuItem>
         </Menu>
     );
 
@@ -219,6 +220,28 @@ class App extends Component {
                 getNodeKey: ({ treeIndex }) => treeIndex
             })
         }));
+        this.closeMenu();
+    };
+
+    addChildNode = () => {
+        this.setState(state => {
+            let result = addNodeUnderParent({
+                treeData: state.treeData,
+                parentKey: state.menu.treeIndex,
+                expandParent: true,
+                getNodeKey: ({ treeIndex }) => treeIndex,
+                newNode: {
+                    title: ''
+                }
+            });
+            return {
+                treeData: result.treeData,
+                edit: {
+                    treeIndex: result.treeIndex,
+                    value: ''
+                }
+            };
+        });
         this.closeMenu();
     };
 }
