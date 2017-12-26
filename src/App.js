@@ -41,6 +41,12 @@ const styles = {
     }
 };
 
+const chipFont = theme.typography.pxToRem(13) + ' ' + theme.typography.fontFamily;
+
+const canvas = document.createElement('canvas');
+const canvasContext = canvas.getContext('2d');
+canvasContext.font = chipFont;
+
 const factorial = [{
     title: 'fn',
     expanded: true,
@@ -88,7 +94,8 @@ class App extends Component {
 
         this.state = {
             treeData: factorial,
-            menu: null
+            menu: null,
+            edit: null
         };
     }
 
@@ -112,25 +119,66 @@ class App extends Component {
         />
     );
 
-    renderNodeContent = ({isDragging, connectDragSource, node, path}) => (
+    renderNodeContent = nodeRendererProps => (
         <div className={this.props.classes.nodeContent}>
-            {isDragging ?
+            {nodeRendererProps.isDragging ?
              null :
-             connectDragSource(<div>{this.renderChip(node.title, this.handleChipClick.bind(this, path))}</div>)}
-            {this.hasChildren(node) ? this.renderLineChildren() : null}
+             nodeRendererProps.connectDragSource(<div>{this.renderChip(nodeRendererProps)}</div>)}
+            {this.hasChildren(nodeRendererProps.node) ? this.renderLineChildren() : null}
         </div>
     );
 
-    renderChip = (label, onClick) => <Chip className={this.props.classes.chip} label={label} onClick={onClick} />;
+    renderChip = ({ node, path, treeIndex }) => {
+        let classes = {
+            root: this.props.classes.chip
+        };
+        let isEditing = this.state.edit && treeIndex === this.state.edit.treeIndex;
+        let label = isEditing ? this.renderInlineEditor(node) : node.title;
+        let handleClick = isEditing ? null : event => this.openMenu(node, path, treeIndex, event.currentTarget);
+        return <Chip classes={classes} label={label} onClick={handleClick} />;
+    };
 
-    handleChipClick = (path, event) => {
-        this.setState({
-            menu: {
-                path,
-                anchorEl: event.currentTarget
+    renderInlineEditor = node => (
+        <input autoFocus
+               value={this.state.edit.value}
+               autoCapitalize='off'
+               onChange={this.handleInlineEditorChange}
+               onBlur={this.handleInlineEditorBlur.bind(this, node)}
+               style={{
+                   border: 0,
+                   outline: 0,
+                   width: canvasContext.measureText(this.state.edit.value).width + 24,
+                   margin: '0 -12px',
+                   textAlign: 'center',
+                   backgroundColor: 'inherit',
+                   font: 'inherit',
+                   color: 'inherit'
+               }}
+        />
+    );
+
+    handleInlineEditorChange = event => {
+        let value = event.target.value;
+        this.setState(state => ({
+            edit: {
+                treeIndex: state.edit.treeIndex,
+                value
             }
+        }));
+    };
+
+    handleInlineEditorBlur = node => {
+        node.title = this.state.edit.value;
+        this.setState({
+            edit: null
         });
-    }
+    };
+
+    openMenu = (node, path, treeIndex, anchorEl) => {
+        this.setState({
+            menu: { node, path, treeIndex, anchorEl }
+        });
+    };
 
     hasChildren = node => node.children && node.children.length;
 
@@ -142,6 +190,7 @@ class App extends Component {
 
     renderMenu = () => (
         <Menu anchorEl={this.state.menu.anchorEl} open={true} onClose={this.closeMenu}>
+            <MenuItem onClick={this.editNode}>Edit</MenuItem>
             <MenuItem onClick={this.removeNode}>Remove</MenuItem>
         </Menu>
     );
@@ -151,6 +200,16 @@ class App extends Component {
             menu: null
         });
     };
+
+    editNode = () => {
+        this.setState(state => ({
+            edit: {
+                treeIndex: state.menu.treeIndex,
+                value: state.menu.node.title
+            }
+        }));
+        this.closeMenu();
+    }
 
     removeNode = () => {
         this.setState(state => ({
