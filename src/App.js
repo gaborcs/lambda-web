@@ -47,56 +47,22 @@ const canvas = document.createElement('canvas');
 const canvasContext = canvas.getContext('2d');
 canvasContext.font = chipFont;
 
-const factorial = [{
-    title: 'fn',
-    expanded: true,
-    children: [{
-        title: 'n'
-    }, {
-        title: 'if',
-        expanded: true,
-        children: [{
-            title: '=',
-            expanded: true,
-            children: [{
-                title: 'n'
-            }, {
-                title: 0
-            }]
-        }, {
-            title: 1
-        }, {
-            title: '*',
-            expanded: true,
-            children: [{
-                title: 'n'
-            }, {
-                title: 'factorial',
-                expanded: true,
-                children: [{
-                    title: '-',
-                    expanded: true,
-                    children: [{
-                        title: 'n'
-                    }, {
-                        title: 1
-                    }]
-                }]
-            }]
-        }]
-    }]
-}];
+const startingState = {
+    treeData: [{
+        title: ''
+    }],
+    menu: null,
+    edit: {
+        treeIndex: 0,
+        value: ''
+    }
+};
 
 class App extends Component {
 
     constructor(props) {
         super(props);
-
-        this.state = {
-            treeData: factorial,
-            menu: null,
-            edit: null
-        };
+        this.state = startingState;
     }
 
     render = () => (
@@ -213,13 +179,14 @@ class App extends Component {
     }
 
     removeNode = () => {
-        this.setState(state => ({
-            treeData: removeNodeAtPath({
+        this.setState(state => {
+            let resultTreeData = removeNodeAtPath({
                 treeData: state.treeData,
                 path: state.menu.path,
                 getNodeKey: ({ treeIndex }) => treeIndex
-            })
-        }));
+            });
+            return resultTreeData.length === 0 ? startingState : { treeData: resultTreeData };
+        });
         this.closeMenu();
     };
 
