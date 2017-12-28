@@ -20,7 +20,8 @@ const theme = createMuiTheme({
 
 const styles = {
     app: {
-        height: '100%',
+        minHeight: '100%',
+        overflow: 'hidden', // remove collapsing margins
         backgroundColor: theme.palette.background.default,
         userSelect: 'none'
     },
@@ -85,6 +86,10 @@ class App extends Component {
             rowHeight={minTouchTargetSize}
             scaffoldBlockPxWidth={minTouchTargetSize}
             nodeContentRenderer={this.renderNodeContent}
+            isVirtualized={false
+                /* disable virtualization because it can remove an input element
+                   (and the associated on-screen keyboard) */
+            }
         />
     );
 
