@@ -112,7 +112,8 @@ class App extends Component {
                value={this.state.edit.value}
                autoCapitalize='off'
                onChange={this.handleInlineEditorChange}
-               onBlur={this.handleInlineEditorBlur.bind(this, node)}
+               onKeyPress={this.handleInlineEditorKeyPress.bind(this, node)}
+               onBlur={() => this.saveInlineEditorValue(node)}
                style={{
                    border: 0,
                    outline: 0,
@@ -136,7 +137,13 @@ class App extends Component {
         }));
     };
 
-    handleInlineEditorBlur = node => {
+    handleInlineEditorKeyPress = (node, event) => {
+        if (event.key === 'Enter') {
+            this.saveInlineEditorValue(node);
+        }
+    };
+
+    saveInlineEditorValue = node => {
         node.title = this.state.edit.value;
         this.setState({
             edit: null
