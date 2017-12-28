@@ -38,6 +38,9 @@ const styles = {
         left: minTouchTargetSize / 2,
         bottom: 0,
         height: (minTouchTargetSize - chipHeight) / 2
+    },
+    pickedUp: {
+        boxShadow: theme.shadows[8]
     }
 };
 
@@ -152,7 +155,12 @@ class App extends Component {
 
     renderPreview = () => <Preview generator={this.generatePreview} />;
 
-    generatePreview = (type, item, style) => <div style={style}>{this.renderChip(item.node.title)}</div>;
+    generatePreview = (type, item, style) => {
+        let classes = {
+            root: this.props.classes.chip + ' ' + this.props.classes.pickedUp
+        };
+        return <div style={style}><Chip classes={classes} label={item.node.title} /></div>;
+    };
 
     renderMenu = () => (
         <Menu anchorEl={this.state.menu.anchorEl} open={true} onClose={this.closeMenu}>
@@ -217,7 +225,9 @@ const multiBackend = MultiBackend({
     backends: [{
         backend: HTML5Backend
     }, {
-        backend: TouchBackend({delayTouchStart: 1000}),
+        backend: TouchBackend({
+            delayTouchStart: 1000
+        }),
         preview: true,
         transition: TouchTransition
     }]
