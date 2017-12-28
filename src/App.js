@@ -144,6 +144,9 @@ class App extends Component {
                 break;
             case 'Escape':
                 this.setState({ edit: null });
+                break;
+            default:
+                return;
         }
     };
 
