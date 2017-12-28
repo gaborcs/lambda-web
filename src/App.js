@@ -226,7 +226,7 @@ const multiBackend = MultiBackend({
         backend: HTML5Backend
     }, {
         backend: TouchBackend({
-            delayTouchStart: 1000
+            delayTouchStart: 500
         }),
         preview: true,
         transition: TouchTransition
