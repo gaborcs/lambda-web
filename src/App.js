@@ -121,21 +121,20 @@ class App extends Component {
 
     renderNodeContent = nodeRendererProps => (
         <div className={this.props.classes.nodeContent}>
-            {nodeRendererProps.isDragging ?
-             null :
-             nodeRendererProps.connectDragSource(<div>{this.renderChip(nodeRendererProps)}</div>)}
+            {nodeRendererProps.isDragging ? null : this.renderChip(nodeRendererProps)}
             {this.hasChildren(nodeRendererProps.node) ? this.renderLineChildren() : null}
         </div>
     );
 
-    renderChip = ({ node, path, treeIndex }) => {
+    renderChip = ({ node, path, treeIndex, connectDragSource }) => {
         let classes = {
             root: this.props.classes.chip
         };
         let isEditing = this.state.edit && treeIndex === this.state.edit.treeIndex;
         let label = isEditing ? this.renderInlineEditor(node) : node.title;
         let handleClick = isEditing ? null : event => this.openMenu(node, path, treeIndex, event.currentTarget);
-        return <Chip classes={classes} label={label} onClick={handleClick} />;
+        let chip = <Chip classes={classes} label={label} onClick={handleClick} />;
+        return isEditing ? chip : connectDragSource(<div>{chip}</div>);
     };
 
     renderInlineEditor = node => (
