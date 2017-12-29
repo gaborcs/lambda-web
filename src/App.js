@@ -3,6 +3,7 @@ import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import TouchBackend from 'react-dnd-touch-backend';
 import MultiBackend, { TouchTransition, Preview } from 'react-dnd-multi-backend';
+import withScrolling from 'react-dnd-scrollzone';
 import { SortableTreeWithoutDndContext as SortableTree, removeNodeAtPath, addNodeUnderParent } from 'react-sortable-tree';
 import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
 import Chip from 'material-ui/Chip';
@@ -20,10 +21,13 @@ const theme = createMuiTheme({
 
 const styles = {
     app: {
-        minHeight: '100%',
-        overflow: 'hidden', // remove collapsing margins
+        height: '100%',
         backgroundColor: theme.palette.background.default,
         userSelect: 'none'
+    },
+    scrollingComponent: {
+        height: '100%',
+        overflow: 'auto'
     },
     nodeContent: {
         height: '100%',
@@ -62,6 +66,8 @@ const startingState = {
     }
 };
 
+const ScrollingComponent = withScrolling('div');
+
 class App extends Component {
 
     constructor(props) {
@@ -72,11 +78,17 @@ class App extends Component {
     render = () => (
         <MuiThemeProvider theme={theme}>
             <div className={this.props.classes.app}>
-                {this.renderSortableTree()}
+                {this.renderScrollingSortableTree()}
                 {this.renderPreview()}
                 {this.state.menu ? this.renderMenu() : null}
             </div>
         </MuiThemeProvider>
+    );
+
+    renderScrollingSortableTree = () => (
+        <ScrollingComponent className={this.props.classes.scrollingComponent}>
+            {this.renderSortableTree()}
+        </ScrollingComponent>
     );
 
     renderSortableTree = () => (
