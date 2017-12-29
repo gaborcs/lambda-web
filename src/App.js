@@ -37,6 +37,26 @@ const styles = {
     chip: {
         minWidth: minTouchTargetSize
     },
+    inlineEditor: {
+        position: 'relative'
+    },
+    inlineEditorSizer: {
+        color: 'transparent'
+    },
+    inlineEditorInput: {
+        position: 'absolute',
+        left: -12,
+        top: -8,
+        padding: '8px 0',
+        width: 'calc(100% + 24px)',
+        height: '100%',
+        border: 0,
+        outline: 0,
+        textAlign: 'center',
+        backgroundColor: 'inherit',
+        font: 'inherit',
+        color: 'inherit'
+    },
     lineChildren: {
         position: 'absolute',
         width: 1,
@@ -48,12 +68,6 @@ const styles = {
         boxShadow: theme.shadows[8]
     }
 };
-
-const chipFont = theme.typography.pxToRem(13) + ' ' + theme.typography.fontFamily;
-
-const canvas = document.createElement('canvas');
-const canvasContext = canvas.getContext('2d');
-canvasContext.font = chipFont;
 
 const startingState = {
     treeData: [{
@@ -125,22 +139,24 @@ class App extends Component {
     };
 
     renderInlineEditor = node => (
-        <input autoFocus
+        <span className={this.props.classes.inlineEditor}>
+            {this.renderInlineEditorSizer()}
+            {this.renderInlineEditorInput(node)}
+        </span>
+    );
+
+    renderInlineEditorSizer = () => (
+        <span className={this.props.classes.inlineEditorSizer}>{this.state.edit.value || 'a'}</span>
+    );
+
+    renderInlineEditorInput = node => (
+        <input className={this.props.classes.inlineEditorInput}
                value={this.state.edit.value}
+               autoFocus
                autoCapitalize='off'
                onChange={this.handleInlineEditorChange}
                onKeyDown={this.handleInlineEditorKeyDown.bind(this, node)}
                onBlur={() => this.saveInlineEditorValue(node)}
-               style={{
-                   border: 0,
-                   outline: 0,
-                   width: canvasContext.measureText(this.state.edit.value).width + 24,
-                   margin: '0 -12px',
-                   textAlign: 'center',
-                   backgroundColor: 'inherit',
-                   font: 'inherit',
-                   color: 'inherit'
-               }}
         />
     );
 
