@@ -81,11 +81,7 @@ const startingState = {
 const ScrollingComponent = withScrolling('div');
 
 class App extends Component {
-
-    constructor(props) {
-        super(props);
-        this.state = startingState;
-    }
+    state = startingState;
 
     render = () => (
         <MuiThemeProvider theme={theme}>
