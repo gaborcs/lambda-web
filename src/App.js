@@ -4,7 +4,7 @@ import HTML5Backend from 'react-dnd-html5-backend';
 import TouchBackend from 'react-dnd-touch-backend';
 import MultiBackend, { TouchTransition, Preview } from 'react-dnd-multi-backend';
 import withScrolling from 'react-dnd-scrollzone';
-import { SortableTreeWithoutDndContext as SortableTree, removeNodeAtPath, addNodeUnderParent } from 'react-sortable-tree';
+import { SortableTreeWithoutDndContext as SortableTree, changeNodeAtPath, removeNodeAtPath, addNodeUnderParent } from 'react-sortable-tree';
 import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
 import Reboot from 'material-ui/Reboot';
 import Chip from 'material-ui/Chip';
@@ -124,16 +124,16 @@ class App extends Component {
             root: this.props.classes.chip
         };
         let isEditing = this.state.edit && treeIndex === this.state.edit.treeIndex;
-        let label = isEditing ? this.renderInlineEditor(node) : node.title;
+        let label = isEditing ? this.renderInlineEditor(path, node) : node.title;
         let handleClick = isEditing ? null : event => this.openMenu(node, path, treeIndex, event.currentTarget);
         let chip = <Chip classes={classes} label={label} onClick={handleClick} />;
         return isEditing ? chip : connectDragSource(<div>{chip}</div>);
     };
 
-    renderInlineEditor = node => (
+    renderInlineEditor = (path, node) => (
         <span className={this.props.classes.inlineEditor}>
             {this.renderInlineEditorSizer()}
-            {this.renderInlineEditorInput(node)}
+            {this.renderInlineEditorInput(path, node)}
         </span>
     );
 
@@ -141,14 +141,14 @@ class App extends Component {
         <span className={this.props.classes.inlineEditorSizer}>{this.state.edit.value || 'a'}</span>
     );
 
-    renderInlineEditorInput = node => (
+    renderInlineEditorInput = (path, node) => (
         <input className={this.props.classes.inlineEditorInput}
                value={this.state.edit.value}
                autoFocus
                autoCapitalize='off'
                onChange={this.handleInlineEditorChange}
-               onKeyDown={this.handleInlineEditorKeyDown.bind(this, node)}
-               onBlur={() => this.saveInlineEditorValue(node)}
+               onKeyDown={this.handleInlineEditorKeyDown.bind(this, path, node)}
+               onBlur={() => this.saveInlineEditorValue(path, node)}
         />
     );
 
@@ -162,10 +162,10 @@ class App extends Component {
         }));
     };
 
-    handleInlineEditorKeyDown = (node, event) => {
+    handleInlineEditorKeyDown = (path, node, event) => {
         switch (event.key) {
             case 'Enter':
-                this.saveInlineEditorValue(node);
+                this.saveInlineEditorValue(path, node);
                 break;
             case 'Escape':
                 this.setState({ edit: null });
@@ -175,11 +175,16 @@ class App extends Component {
         }
     };
 
-    saveInlineEditorValue = node => {
-        node.title = this.state.edit.value;
-        this.setState({
+    saveInlineEditorValue = (path, node) => {
+        this.setState(state => ({
+            treeData: changeNodeAtPath({
+                treeData: state.treeData,
+                path,
+                newNode: {...node, title: state.edit.value},
+                getNodeKey: ({ treeIndex }) => treeIndex
+            }),
             edit: null
-        });
+        }));
     };
 
     openMenu = (node, path, treeIndex, anchorEl) => {
