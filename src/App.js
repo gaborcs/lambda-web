@@ -6,6 +6,7 @@ import MultiBackend, { TouchTransition, Preview } from 'react-dnd-multi-backend'
 import withScrolling from 'react-dnd-scrollzone';
 import { SortableTreeWithoutDndContext as SortableTree, removeNodeAtPath, addNodeUnderParent } from 'react-sortable-tree';
 import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
+import Reboot from 'material-ui/Reboot';
 import Chip from 'material-ui/Chip';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import { withStyles } from 'material-ui/styles';
@@ -20,14 +21,10 @@ const theme = createMuiTheme({
 });
 
 const styles = {
-    app: {
-        height: '100%',
-        backgroundColor: theme.palette.background.default,
-        userSelect: 'none'
-    },
     scrollingComponent: {
         height: '100%',
-        overflow: 'auto'
+        overflow: 'auto',
+        userSelect: 'none'
     },
     nodeContent: {
         height: '100%',
@@ -38,7 +35,8 @@ const styles = {
         minWidth: minTouchTargetSize
     },
     inlineEditor: {
-        position: 'relative'
+        position: 'relative',
+        boxSizing: 'content-box' // needed for sizing the input
     },
     inlineEditorSizer: {
         color: 'transparent'
@@ -91,11 +89,10 @@ class App extends Component {
 
     render = () => (
         <MuiThemeProvider theme={theme}>
-            <div className={this.props.classes.app}>
-                {this.renderScrollingSortableTree()}
-                {this.renderPreview()}
-                {this.state.menu ? this.renderMenu() : null}
-            </div>
+            <Reboot />
+            {this.renderScrollingSortableTree()}
+            {this.renderPreview()}
+            {this.state.menu ? this.renderMenu() : null}
         </MuiThemeProvider>
     );
 
