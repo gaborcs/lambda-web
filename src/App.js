@@ -209,7 +209,7 @@ class App extends Component {
     renderMenu = () => (
         <Menu anchorEl={this.state.menu.anchorEl} open={true} onClose={this.closeMenu}>
             <MenuItem onClick={this.editNode}>Edit</MenuItem>
-            <MenuItem onClick={this.removeNode}>Remove</MenuItem>
+            <MenuItem onClick={this.removeNode}>Delete</MenuItem>
             <MenuItem onClick={this.addChildNode}>Add child</MenuItem>
         </Menu>
     );
