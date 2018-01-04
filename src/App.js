@@ -7,6 +7,12 @@ import withScrolling from 'react-dnd-scrollzone';
 import { SortableTreeWithoutDndContext as SortableTree, changeNodeAtPath, removeNodeAtPath, addNodeUnderParent } from 'react-sortable-tree';
 import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
 import Reboot from 'material-ui/Reboot';
+import AppBar from 'material-ui/AppBar';
+import Toolbar from 'material-ui/Toolbar';
+import Typography from 'material-ui/Typography';
+import IconButton from 'material-ui/IconButton';
+import UndoIcon from 'material-ui-icons/Undo';
+import RedoIcon from 'material-ui-icons/Redo';
 import Chip from 'material-ui/Chip';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import { withStyles } from 'material-ui/styles';
@@ -21,10 +27,16 @@ const theme = createMuiTheme({
 });
 
 const styles = {
+    title: {
+        flex: 1
+    },
     scrollingComponent: {
         height: '100%',
         overflow: 'auto',
         userSelect: 'none'
+    },
+    tree: {
+        padding: '8px 0'
     },
     nodeContent: {
         height: '100%',
@@ -67,41 +79,100 @@ const styles = {
     }
 };
 
-const startingState = {
-    treeData: [{
-        title: ''
-    }],
-    menu: null,
-    edit: {
-        treeIndex: 0,
-        value: ''
-    }
-};
+const initialTreeData = [{ title: '' }];
+const initialEdit = { treeIndex: 0, value: '' };
 
 const ScrollingComponent = withScrolling('div');
 
 class App extends Component {
-    state = startingState;
+    state = {
+        treeDataHistory: {
+            past: [],
+            present: initialTreeData,
+            future: []
+        },
+        menu: null,
+        edit: initialEdit
+    };
+
+    undo = () => {
+        this.setState(state => {
+            let { past, present, future } = state.treeDataHistory;
+            return {
+                treeDataHistory: {
+                    past: past.slice(0, past.length - 1),
+                    present: past[past.length - 1],
+                    future: [present, ...future]
+                }
+            };
+        });
+    };
+
+    redo = () => {
+        this.setState(state => {
+            let { past, present, future } = state.treeDataHistory;
+            return {
+                treeDataHistory: {
+                    past: [...past, present],
+                    present: future[0],
+                    future: future.slice(1)
+                }
+            };
+        });
+    };
+
+    addToHistory = treeData => {
+        let { past, present } = this.state.treeDataHistory;
+        return {
+            past: [...past, present],
+            present: treeData,
+            future: []
+        };
+    };
 
     render = () => (
         <MuiThemeProvider theme={theme}>
             <Reboot />
-            {this.renderScrollingSortableTree()}
+            {this.renderScrollingContent()}
             {this.renderPreview()}
             {this.state.menu ? this.renderMenu() : null}
         </MuiThemeProvider>
     );
 
-    renderScrollingSortableTree = () => (
+    renderScrollingContent = () => (
         <ScrollingComponent className={this.props.classes.scrollingComponent}>
+            {this.renderAppBar()}
             {this.renderSortableTree()}
         </ScrollingComponent>
     );
 
+    renderAppBar = () => (
+        <AppBar position="static" elevation={0} color="default">
+            <Toolbar>
+                <Typography type="title" className={this.props.classes.title}>&lambda;</Typography>
+                {this.renderUndoButton()}
+                {this.renderRedoButton()}
+            </Toolbar>
+        </AppBar>
+    );
+
+    renderUndoButton = () => (
+        <IconButton disabled={this.state.treeDataHistory.past.length === 0} onClick={this.undo}>
+            <UndoIcon />
+        </IconButton>
+    );
+
+    renderRedoButton = () => (
+        <IconButton disabled={this.state.treeDataHistory.future.length === 0} onClick={this.redo}>
+            <RedoIcon />
+        </IconButton>
+    );
+
     renderSortableTree = () => (
         <SortableTree
-            treeData={this.state.treeData}
-            onChange={treeData => this.setState({ treeData })}
+            className={this.props.classes.tree}
+            treeData={this.state.treeDataHistory.present}
+            onChange={treeData => this.setState({ treeDataHistory: this.addToHistory(treeData) })}
             rowHeight={minTouchTargetSize}
             scaffoldBlockPxWidth={minTouchTargetSize}
             nodeContentRenderer={this.renderNodeContent}
@@ -176,15 +247,18 @@ class App extends Component {
     };
 
     saveInlineEditorValue = (path, node) => {
-        this.setState(state => ({
-            treeData: changeNodeAtPath({
-                treeData: state.treeData,
+        this.setState(state => {
+            let newTreeData = changeNodeAtPath({
+                treeData: state.treeDataHistory.present,
                 path,
                 newNode: {...node, title: state.edit.value},
                 getNodeKey: ({ treeIndex }) => treeIndex
-            }),
-            edit: null
-        }));
+            });
+            return {
+                treeDataHistory: this.addToHistory(newTreeData),
+                edit: null
+            };
+        })
     };
 
     openMenu = (node, path, treeIndex, anchorEl) => {
@@ -233,11 +307,16 @@ class App extends Component {
     removeNode = () => {
         this.setState(state => {
             let resultTreeData = removeNodeAtPath({
-                treeData: state.treeData,
+                treeData: state.treeDataHistory.present,
                 path: state.menu.path,
                 getNodeKey: ({ treeIndex }) => treeIndex
             });
-            return resultTreeData.length === 0 ? startingState : { treeData: resultTreeData };
+            return resultTreeData.length === 0 ? {
+                treeDataHistory: this.addToHistory(initialTreeData),
+                edit: initialEdit
+            } : {
+                treeDataHistory: this.addToHistory(resultTreeData)
+            };
         });
         this.closeMenu();
     };
@@ -245,7 +324,7 @@ class App extends Component {
     addChildNode = () => {
         this.setState(state => {
             let result = addNodeUnderParent({
-                treeData: state.treeData,
+                treeData: state.treeDataHistory.present,
                 parentKey: state.menu.treeIndex,
                 expandParent: true,
                 getNodeKey: ({ treeIndex }) => treeIndex,
@@ -254,7 +333,7 @@ class App extends Component {
                 }
             });
             return {
-                treeData: result.treeData,
+                treeDataHistory: this.addToHistory(result.treeData),
                 edit: {
                     treeIndex: result.treeIndex,
                     value: ''
