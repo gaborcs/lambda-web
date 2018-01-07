@@ -27,15 +27,19 @@ const theme = createMuiTheme({
 });
 
 const styles = {
-    title: {
-        flex: 1
+    logo: {
+        flex: 1,
+        fontSize: '1.625rem' // compensate for thinner font (Roboto doesn't seem to have lambda in medium weight)
     },
     scrollingComponent: {
+        display: 'flex',
+        flexDirection: 'column',
         height: '100%',
         overflow: 'auto',
         userSelect: 'none'
     },
     tree: {
+        flex: 1,
         padding: '8px 0'
     },
     nodeContent: {
@@ -76,6 +80,9 @@ const styles = {
     },
     pickedUp: {
         boxShadow: theme.shadows[8]
+    },
+    bottomBar: {
+        backgroundColor: theme.palette.background.appBar
     }
 };
 
@@ -143,13 +150,14 @@ class App extends Component {
         <ScrollingComponent className={this.props.classes.scrollingComponent}>
             {this.renderAppBar()}
             {this.renderSortableTree()}
+            {this.renderBottomBar()}
         </ScrollingComponent>
     );
 
     renderAppBar = () => (
         <AppBar position="static" elevation={0} color="default">
             <Toolbar>
-                <Typography type="title" className={this.props.classes.title}>&lambda;</Typography>
+                <Typography className={this.props.classes.logo}>&lambda;</Typography>
                 {this.renderUndoButton()}
                 {this.renderRedoButton()}
             </Toolbar>
@@ -342,6 +350,29 @@ class App extends Component {
         });
         this.closeMenu();
     };
+
+    renderBottomBar = () => (
+        <Toolbar className={this.props.classes.bottomBar}>
+            <Typography type="subheading">
+                {this.eval(this.state.treeDataHistory.present[0]).toString()}
+            </Typography>
+        </Toolbar>
+    );
+
+    eval = tree => {
+        let title = tree.title;
+        let children = tree.children || [];
+        let isNumber = !isNaN(title);
+        if (isNumber) {
+            return +title;
+        } if (title === '+') {
+            return children.map(this.eval).reduce((a, b) => a + b, 0);
+        } else if (title === '*') {
+            return children.map(this.eval).reduce((a, b) => a * b, 1);
+        } else {
+            return NaN;
+        }
+    }
 }
 
 const multiBackend = MultiBackend({
