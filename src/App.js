@@ -142,7 +142,7 @@ class App extends Component {
             <Reboot />
             {this.renderScrollingContent()}
             {this.renderPreview()}
-            {this.state.menu ? this.renderMenu() : null}
+            {this.renderMenu()}
         </MuiThemeProvider>
     );
 
@@ -289,7 +289,9 @@ class App extends Component {
     };
 
     renderMenu = () => (
-        <Menu anchorEl={this.state.menu.anchorEl} open={true} onClose={this.closeMenu}>
+        <Menu anchorEl={this.state.menu && this.state.menu.anchorEl}
+              open={!!this.state.menu}
+              onClose={this.closeMenu}>
             <MenuItem onClick={this.editNode}>Edit</MenuItem>
             <MenuItem onClick={this.removeNode}>Delete</MenuItem>
             <MenuItem onClick={this.addChildNode}>Add child</MenuItem>
