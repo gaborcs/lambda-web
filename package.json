@@ -9,7 +9,7 @@
     "react-dnd-multi-backend": "^3.0.7",
     "react-dom": "^16.2.0",
     "react-scripts": "1.1.0",
-    "react-sortable-tree": "^1.7.0",
+    "react-sortable-tree": "^1.8.1",
     "typeface-roboto": "0.0.50"
   },
   "scripts": {
