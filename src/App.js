@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import TouchBackend from 'react-dnd-touch-backend';
@@ -16,6 +16,7 @@ import RedoIcon from 'material-ui-icons/Redo';
 import Chip from 'material-ui/Chip';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import { withStyles } from 'material-ui/styles';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 
 const chipHeight = 32;
 const minTouchTargetSize = 48;
@@ -27,16 +28,18 @@ const theme = createMuiTheme({
 });
 
 const styles = {
-    logo: {
-        flex: 1,
-        fontSize: '1.625rem' // compensate for thinner font (Roboto doesn't seem to have lambda in medium weight)
-    },
     scrollingComponent: {
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
         overflow: 'auto',
         userSelect: 'none'
+    },
+    title: {
+        flex: 1
+    },
+    primitiveFunctionDescription: {
+        padding: 24
     },
     tree: {
         flex: 1,
@@ -83,6 +86,34 @@ const styles = {
     },
     bottomBar: {
         backgroundColor: theme.palette.background.appBar
+    },
+    go: {
+        outline: 0,
+        textDecoration: 'none'
+    }
+};
+
+const primitiveFunctions = {
+    '+': {
+        description: 'Primitive function that returns the sum of numbers',
+        apply: nodes => nodes.map(evalNode).reduce((a, b) => a + b, 0)
+    },
+    '*': {
+        description: 'Primitive function that returns the product of numbers',
+        apply: nodes => nodes.map(evalNode).reduce((a, b) => a * b, 1)
+    }
+};
+
+const evalNode = node => {
+    let title = node.title;
+    let children = node.children || [];
+    let isNumber = !isNaN(title);
+    if (isNumber) {
+        return +title;
+    } if (primitiveFunctions[title]) {
+        return primitiveFunctions[title].apply(children);
+    } else {
+        return NaN;
     }
 };
 
@@ -98,7 +129,7 @@ class App extends Component {
             present: initialTreeData,
             future: []
         },
-        menu: null,
+        menu: { open: false },
         edit: initialEdit
     };
 
@@ -138,30 +169,59 @@ class App extends Component {
     };
 
     render = () => (
-        <MuiThemeProvider theme={theme}>
-            <Reboot />
-            {this.renderScrollingContent()}
-            {this.renderPreview()}
-            {this.renderMenu()}
-        </MuiThemeProvider>
+        <Router>
+            <MuiThemeProvider theme={theme}>
+                <Reboot />
+                {this.renderScrollingContent()}
+                {this.renderPreview()}
+                {this.renderMenu()}
+            </MuiThemeProvider>
+        </Router>
     );
 
     renderScrollingContent = () => (
         <ScrollingComponent className={this.props.classes.scrollingComponent}>
-            {this.renderAppBar()}
-            {this.renderSortableTree()}
-            {this.renderBottomBar()}
+            <Route exact path="/:name" render={this.renderPrimitiveFunction} />
+            <Route exact path="/" render={this.renderEvaluator} />
         </ScrollingComponent>
     );
 
-    renderAppBar = () => (
+    renderPrimitiveFunction = ({ match }) => {
+        let name = match.params.name;
+        return (
+            <Fragment>
+                {this.renderAppBarForPrimitiveFunction(name)}
+                {this.renderPrimitiveFunctionDescription(primitiveFunctions[name].description)}
+            </Fragment>
+        );
+    };
+
+    renderAppBarForPrimitiveFunction = name => this.renderAppBar(<Typography type="title">{name}</Typography>);
+
+    renderAppBar = content => (
         <AppBar position="static" elevation={0} color="default">
-            <Toolbar>
-                <Typography className={this.props.classes.logo}>&lambda;</Typography>
-                {this.renderUndoButton()}
-                {this.renderRedoButton()}
-            </Toolbar>
+            <Toolbar>{content}</Toolbar>
         </AppBar>
+    );
+
+    renderPrimitiveFunctionDescription = description => (
+        <Typography className={this.props.classes.primitiveFunctionDescription}>{description}</Typography>
+    );
+
+    renderEvaluator = () => (
+        <Fragment>
+            {this.renderAppBarForEvaluator()}
+            {this.renderSortableTree()}
+            {this.renderBottomBar()}
+        </Fragment>
+    );
+
+    renderAppBarForEvaluator = () => this.renderAppBar(
+        <Fragment>
+            <Typography type="title" className={this.props.classes.title}>Evaluator</Typography>
+            {this.renderUndoButton()}
+            {this.renderRedoButton()}
+        </Fragment>
     );
 
     renderUndoButton = () => (
@@ -271,7 +331,7 @@ class App extends Component {
 
     openMenu = (node, path, treeIndex, anchorEl) => {
         this.setState({
-            menu: { node, path, treeIndex, anchorEl }
+            menu: { open: true, node, path, treeIndex, anchorEl }
         });
     };
 
@@ -289,10 +349,11 @@ class App extends Component {
     };
 
     renderMenu = () => (
-        <Menu anchorEl={this.state.menu && this.state.menu.anchorEl}
-              open={!!this.state.menu}
+        <Menu anchorEl={this.state.menu.anchorEl}
+              open={this.state.menu.open}
               onClose={this.closeMenu}
               disableRestoreFocus>
+            {this.canGoToDefinition() && this.renderGo()}
             <MenuItem onClick={this.editNode}>Edit</MenuItem>
             <MenuItem onClick={this.removeNode}>Delete</MenuItem>
             <MenuItem onClick={this.addChildNode}>Add child</MenuItem>
@@ -300,10 +361,21 @@ class App extends Component {
     );
 
     closeMenu = () => {
-        this.setState({
-            menu: null
-        });
+        this.setState(state => ({
+            menu: {
+                ...this.state.menu, // this data is still needed for the close transition
+                open: false
+            }
+        }));
     };
+
+    canGoToDefinition = () => this.state.menu.node && primitiveFunctions[this.state.menu.node.title];
+
+    renderGo = () => (
+        <Link className={this.props.classes.go} to={this.state.menu.node.title} onClick={this.closeMenu}>
+            <MenuItem>Go</MenuItem>
+        </Link>
+    );
 
     editNode = () => {
         this.setState(state => ({
@@ -357,25 +429,10 @@ class App extends Component {
     renderBottomBar = () => (
         <Toolbar className={this.props.classes.bottomBar}>
             <Typography type="subheading">
-                {this.eval(this.state.treeDataHistory.present[0]).toString()}
+                {evalNode(this.state.treeDataHistory.present[0]).toString()}
             </Typography>
         </Toolbar>
     );
-
-    eval = tree => {
-        let title = tree.title;
-        let children = tree.children || [];
-        let isNumber = !isNaN(title);
-        if (isNumber) {
-            return +title;
-        } if (title === '+') {
-            return children.map(this.eval).reduce((a, b) => a + b, 0);
-        } else if (title === '*') {
-            return children.map(this.eval).reduce((a, b) => a * b, 1);
-        } else {
-            return NaN;
-        }
-    }
 }
 
 const multiBackend = MultiBackend({
