@@ -291,7 +291,8 @@ class App extends Component {
     renderMenu = () => (
         <Menu anchorEl={this.state.menu && this.state.menu.anchorEl}
               open={!!this.state.menu}
-              onClose={this.closeMenu}>
+              onClose={this.closeMenu}
+              disableRestoreFocus>
             <MenuItem onClick={this.editNode}>Edit</MenuItem>
             <MenuItem onClick={this.removeNode}>Delete</MenuItem>
             <MenuItem onClick={this.addChildNode}>Add child</MenuItem>
