@@ -38,6 +38,14 @@ const styles = {
     title: {
         flex: 1
     },
+    nameInput: {
+        width: '100%',
+        border: 0,
+        outline: 0,
+        backgroundColor: 'inherit',
+        font: 'inherit',
+        color: 'inherit'
+    },
     primitiveFunctionDescription: {
         padding: 24
     },
@@ -124,6 +132,7 @@ const ScrollingComponent = withScrolling('div');
 
 class App extends Component {
     state = {
+        name: "",
         treeDataHistory: {
             past: [],
             present: initialTreeData,
@@ -218,11 +227,25 @@ class App extends Component {
 
     renderAppBarForEvaluator = () => this.renderAppBar(
         <Fragment>
-            <Typography type="title" className={this.props.classes.title}>Evaluator</Typography>
+            {this.renderNameInput()}
             {this.renderUndoButton()}
             {this.renderRedoButton()}
         </Fragment>
     );
+
+    renderNameInput = () => (
+        <Typography type="title" className={this.props.classes.title}>
+            <input
+                className={this.props.classes.nameInput}
+                placeholder="Name"
+                value={this.state.name}
+                onChange={this.handleNameChange} />
+        </Typography>
+    );
+
+    handleNameChange = event => {
+        this.setState({ name: event.target.value });
+    }
 
     renderUndoButton = () => (
         <IconButton disabled={this.state.treeDataHistory.past.length === 0} onClick={this.undo}>
