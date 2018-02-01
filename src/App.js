@@ -93,7 +93,7 @@ const styles = {
         boxShadow: theme.shadows[8]
     },
     bottomBar: {
-        backgroundColor: theme.palette.background.appBar
+        backgroundColor: theme.palette.grey[900]
     },
     go: {
         outline: 0,
