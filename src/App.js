@@ -96,6 +96,7 @@ const styles = {
         backgroundColor: theme.palette.grey[900]
     },
     go: {
+        display: 'block',
         outline: 0,
         textDecoration: 'none'
     }
