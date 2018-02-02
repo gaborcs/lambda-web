@@ -28,11 +28,10 @@ const theme = createMuiTheme({
 });
 
 const styles = {
-    scrollingComponent: {
+    layoutContainer: {
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        overflow: 'auto',
         userSelect: 'none'
     },
     title: {
@@ -49,9 +48,10 @@ const styles = {
     primitiveFunctionDescription: {
         padding: 24
     },
-    tree: {
+    scrollingComponent: {
         flex: 1,
-        padding: '8px 0'
+        padding: '8px 0',
+        overflow: 'auto'
     },
     nodeContent: {
         height: '100%',
@@ -182,27 +182,21 @@ class App extends Component {
         <Router>
             <MuiThemeProvider theme={theme}>
                 <Reboot />
-                {this.renderScrollingContent()}
+                <Route exact path="/:name" render={this.renderPrimitiveFunction} />
+                <Route exact path="/" render={this.renderEvaluator} />
                 {this.renderPreview()}
                 {this.renderMenu()}
             </MuiThemeProvider>
         </Router>
     );
 
-    renderScrollingContent = () => (
-        <ScrollingComponent className={this.props.classes.scrollingComponent}>
-            <Route exact path="/:name" render={this.renderPrimitiveFunction} />
-            <Route exact path="/" render={this.renderEvaluator} />
-        </ScrollingComponent>
-    );
-
     renderPrimitiveFunction = ({ match }) => {
         let name = match.params.name;
         return (
-            <Fragment>
+            <div className={this.props.classes.layoutContainer}>
                 {this.renderAppBarForPrimitiveFunction(name)}
                 {this.renderPrimitiveFunctionDescription(primitiveFunctions[name].description)}
-            </Fragment>
+            </div>
         );
     };
 
@@ -219,11 +213,11 @@ class App extends Component {
     );
 
     renderEvaluator = () => (
-        <Fragment>
+        <div className={this.props.classes.layoutContainer}>
             {this.renderAppBarForEvaluator()}
-            {this.renderSortableTree()}
+            {this.renderScrollingContent()}
             {this.renderBottomBar()}
-        </Fragment>
+        </div>
     );
 
     renderAppBarForEvaluator = () => this.renderAppBar(
@@ -260,9 +254,14 @@ class App extends Component {
         </IconButton>
     );
 
+    renderScrollingContent = () => (
+        <ScrollingComponent className={this.props.classes.scrollingComponent}>
+            {this.renderSortableTree()}
+        </ScrollingComponent>
+    );
+
     renderSortableTree = () => (
         <SortableTree
-            className={this.props.classes.tree}
             treeData={this.state.treeDataHistory.present}
             onChange={treeData => this.setState({ treeDataHistory: this.addToHistory(treeData) })}
             rowHeight={minTouchTargetSize}
