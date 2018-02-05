@@ -232,6 +232,7 @@ class App extends Component {
         <Typography variant="title" className={this.props.classes.title}>
             <input
                 className={this.props.classes.nameInput}
+                autoCapitalize="off"
                 placeholder="Name"
                 value={this.state.name}
                 onChange={this.handleNameChange} />
