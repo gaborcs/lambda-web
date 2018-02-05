@@ -115,7 +115,7 @@ const evalNode = node => {
 
 const initialTreeData = [{ title: '' }];
 
-const modes = { default: 'default', menu: 'menu', edit: 'edit' };
+const modes = { default: 'default', menu: 'menu', edit: 'edit', add: 'add' };
 
 const ScrollingComponent = withScrolling('div');
 
@@ -307,82 +307,13 @@ class App extends Component {
               onClose={this.closeMenu}
               disableRestoreFocus>
             {this.canGoToDefinition() && this.renderGo()}
-            <MenuItem onClick={this.editNode}>Edit</MenuItem>
+            <MenuItem onClick={this.initiateEdit}>Edit</MenuItem>
             <MenuItem onClick={this.removeNode}>Delete</MenuItem>
-            <MenuItem onClick={this.addChildNode}>Add child</MenuItem>
+            <MenuItem onClick={this.initiateAdd}>Add child</MenuItem>
         </Menu>
     );
 
-    renderEditMenu = () => (
-        <Popover
-            classes={{ paper: this.props.classes.popover }}
-            anchorEl={this.state.menu.anchorEl}
-            getContentAnchorEl={() => findDOMNode(this.editInput)}
-            open={this.state.mode === modes.edit}
-            onClose={() => this.saveEditResult()}>
-            {this.renderEditInput()}
-            {Object.entries(primitiveFunctions).map(([name, info]) => this.renderFunctionMenuItem(name))}
-        </Popover>
-    );
-
-    renderEditInput = () => (
-        <Input
-            className={this.props.classes.editInput}
-            autoFocus
-            autoCapitalize="off"
-            placeholder="Enter value"
-            value={this.state.editValue}
-            onChange={this.handleEditInputChange}
-            onKeyDown={this.handleEditInputKeyDown}
-            ref={node => {
-                this.editInput = node;
-            }} />
-    );
-
-    handleEditInputChange = event => {
-        this.setState({ editValue: event.target.value });
-    };
-
-    handleEditInputKeyDown = (event) => {
-        if (event.key === 'Enter') {
-            this.saveEditResult();
-        }
-    };
-
-    saveEditResult = result => {
-        this.setState(state => {
-            let { treeDataHistory, menu, editValue } = state;
-            result = result || editValue;
-            let newTreeData = changeNodeAtPath({
-                treeData: treeDataHistory.present,
-                path: menu.path,
-                newNode: { ...menu.node, title: result },
-                getNodeKey: ({ treeIndex }) => treeIndex
-            });
-            return {
-                treeDataHistory: this.addToHistory(newTreeData),
-                mode: modes.default
-            };
-        })
-    };
-
-    renderFunctionMenuItem = name => (
-        <MenuItem key={name} onClick={this.saveEditResult.bind(this, name)}>{name}</MenuItem>
-    );
-
-    closeMenu = () => {
-        this.setState({ mode: modes.default });
-    };
-
-    canGoToDefinition = () => this.state.menu.node && primitiveFunctions[this.state.menu.node.title];
-
-    renderGo = () => (
-        <Link className={this.props.classes.go} to={this.state.menu.node.title} onClick={this.closeMenu}>
-            <MenuItem>Go</MenuItem>
-        </Link>
-    );
-
-    editNode = () => {
+    initiateEdit = () => {
         this.setState(state => ({
             mode: modes.edit,
             editValue: state.menu.node.title
@@ -405,23 +336,97 @@ class App extends Component {
         this.closeMenu();
     };
 
-    addChildNode = () => {
-        this.setState(state => {
-            let result = addNodeUnderParent({
-                treeData: state.treeDataHistory.present,
-                parentKey: state.menu.treeIndex,
-                expandParent: true,
-                getNodeKey: ({ treeIndex }) => treeIndex,
-                newNode: {
-                    title: ''
-                }
-            });
-            return {
-                treeDataHistory: this.addToHistory(result.treeData),
-                mode: modes.default
-            };
+    initiateAdd = () => {
+        this.setState({
+            mode: modes.add,
+            editValue: ''
         });
     };
+
+    renderEditMenu = () => (
+        <Popover
+            classes={{ paper: this.props.classes.popover }}
+            anchorEl={this.state.menu.anchorEl}
+            getContentAnchorEl={() => findDOMNode(this.editInput)}
+            open={this.state.mode === modes.edit || this.state.mode === modes.add}
+            onClose={() => this.saveEditMenuResult()}>
+            {this.renderEditInput()}
+            {Object.entries(primitiveFunctions).map(([name, info]) => this.renderFunctionMenuItem(name))}
+        </Popover>
+    );
+
+    saveEditMenuResult = value => {
+        this.setState(state => {
+            let newTreeData = state.mode === 'edit' ?
+                    this.editSelectedNode(state, value) :
+                    this.addNodeUnderSelected(state, value).treeData;
+            return {
+                treeDataHistory: this.addToHistory(newTreeData),
+                mode: modes.default
+            };
+        })
+    }
+
+    editSelectedNode = (state, value) => {
+        let { treeDataHistory, menu, editValue } = state;
+        return changeNodeAtPath({
+            treeData: treeDataHistory.present,
+            path: menu.path,
+            newNode: { ...menu.node, title: value || editValue },
+            getNodeKey: ({ treeIndex }) => treeIndex
+        });
+    }
+    
+    addNodeUnderSelected = (state, value) => {
+        let { treeDataHistory, menu, editValue } = state;
+        return addNodeUnderParent({
+            treeData: treeDataHistory.present,
+            parentKey: menu.treeIndex,
+            expandParent: true,
+            newNode: { title: value || editValue },
+            getNodeKey: ({ treeIndex }) => treeIndex
+        });
+    }
+
+    renderEditInput = () => (
+        <Input
+            className={this.props.classes.editInput}
+            autoFocus
+            autoCapitalize="off"
+            placeholder="Enter value"
+            value={this.state.editValue}
+            onChange={this.handleEditInputChange}
+            onKeyDown={this.handleEditInputKeyDown}
+            ref={node => {
+                this.editInput = node;
+            }} />
+    );
+
+    handleEditInputChange = event => {
+        this.setState({ editValue: event.target.value });
+    };
+
+    handleEditInputKeyDown = (event) => {
+        if (event.key === 'Enter') {
+            this.saveEditMenuResult();
+        }
+    };
+
+    renderFunctionMenuItem = name => (
+        <MenuItem key={name} onClick={this.saveEditMenuResult.bind(this, name)}>{name}</MenuItem>
+    );
+
+    closeMenu = () => {
+        this.setState({ mode: modes.default });
+    };
+
+    canGoToDefinition = () => this.state.menu.node && primitiveFunctions[this.state.menu.node.title];
+
+    renderGo = () => (
+        <Link className={this.props.classes.go} to={this.state.menu.node.title} onClick={this.closeMenu}>
+            <MenuItem>Go</MenuItem>
+        </Link>
+    );
 
     renderBottomBar = () => (
         <Toolbar className={this.props.classes.bottomBar}>
