@@ -200,7 +200,7 @@ class App extends Component {
         );
     };
 
-    renderAppBarForPrimitiveFunction = name => this.renderAppBar(<Typography type="title">{name}</Typography>);
+    renderAppBarForPrimitiveFunction = name => this.renderAppBar(<Typography variant="title">{name}</Typography>);
 
     renderAppBar = content => (
         <AppBar position="static" elevation={0} color="default">
@@ -229,7 +229,7 @@ class App extends Component {
     );
 
     renderNameInput = () => (
-        <Typography type="title" className={this.props.classes.title}>
+        <Typography variant="title" className={this.props.classes.title}>
             <input
                 className={this.props.classes.nameInput}
                 placeholder="Name"
@@ -451,7 +451,7 @@ class App extends Component {
 
     renderBottomBar = () => (
         <Toolbar className={this.props.classes.bottomBar}>
-            <Typography type="subheading">
+            <Typography variant="subheading">
                 {evalNode(this.state.treeDataHistory.present[0]).toString()}
             </Typography>
         </Toolbar>
