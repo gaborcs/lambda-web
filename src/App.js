@@ -1,11 +1,12 @@
 import React, { Component, Fragment } from 'react';
+import { findDOMNode } from 'react-dom';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import TouchBackend from 'react-dnd-touch-backend';
 import MultiBackend, { TouchTransition, Preview } from 'react-dnd-multi-backend';
 import withScrolling from 'react-dnd-scrollzone';
 import { SortableTreeWithoutDndContext as SortableTree, changeNodeAtPath, removeNodeAtPath, addNodeUnderParent } from 'react-sortable-tree';
-import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
+import { MuiThemeProvider, createMuiTheme, withStyles } from 'material-ui/styles';
 import Reboot from 'material-ui/Reboot';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
@@ -15,7 +16,8 @@ import UndoIcon from 'material-ui-icons/Undo';
 import RedoIcon from 'material-ui-icons/Redo';
 import Chip from 'material-ui/Chip';
 import Menu, { MenuItem } from 'material-ui/Menu';
-import { withStyles } from 'material-ui/styles';
+import Popover from 'material-ui/Popover';
+import Input from 'material-ui/Input';
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 
 const chipHeight = 32;
@@ -61,27 +63,6 @@ const styles = {
     chip: {
         minWidth: minTouchTargetSize
     },
-    inlineEditor: {
-        position: 'relative',
-        boxSizing: 'content-box' // needed for sizing the input
-    },
-    inlineEditorSizer: {
-        color: 'transparent'
-    },
-    inlineEditorInput: {
-        position: 'absolute',
-        left: -12,
-        top: -8,
-        padding: '8px 0',
-        width: 'calc(100% + 24px)',
-        height: '100%',
-        border: 0,
-        outline: 0,
-        textAlign: 'center',
-        backgroundColor: 'inherit',
-        font: 'inherit',
-        color: 'inherit'
-    },
     lineChildren: {
         position: 'absolute',
         width: 1,
@@ -99,6 +80,12 @@ const styles = {
         display: 'block',
         outline: 0,
         textDecoration: 'none'
+    },
+    popover: {
+        padding: '8px 0'
+    },
+    editInput: {
+        margin: '8px 16px'
     }
 };
 
@@ -127,7 +114,8 @@ const evalNode = node => {
 };
 
 const initialTreeData = [{ title: '' }];
-const initialEdit = { treeIndex: 0, value: '' };
+
+const modes = { default: 'default', menu: 'menu', edit: 'edit' };
 
 const ScrollingComponent = withScrolling('div');
 
@@ -139,8 +127,9 @@ class App extends Component {
             present: initialTreeData,
             future: []
         },
-        menu: { open: false },
-        edit: initialEdit
+        mode: modes.default,
+        menu: {},
+        editValue: ''
     };
 
     undo = () => {
@@ -186,6 +175,7 @@ class App extends Component {
                 <Route exact path="/" render={this.renderEvaluator} />
                 {this.renderPreview()}
                 {this.renderMenu()}
+                {this.renderEditMenu()}
             </MuiThemeProvider>
         </Router>
     );
@@ -286,76 +276,15 @@ class App extends Component {
         let classes = {
             root: this.props.classes.chip
         };
-        let isEditing = this.state.edit && treeIndex === this.state.edit.treeIndex;
-        let label = isEditing ? this.renderInlineEditor(path, node) : node.title;
-        let handleClick = isEditing ? null : event => this.openMenu(node, path, treeIndex, event.currentTarget);
-        let chip = <Chip classes={classes} label={label} onClick={handleClick} />;
-        return isEditing ? chip : connectDragSource(<div>{chip}</div>);
-    };
-
-    renderInlineEditor = (path, node) => (
-        <span className={this.props.classes.inlineEditor}>
-            {this.renderInlineEditorSizer()}
-            {this.renderInlineEditorInput(path, node)}
-        </span>
-    );
-
-    renderInlineEditorSizer = () => (
-        <span className={this.props.classes.inlineEditorSizer}>{this.state.edit.value || 'a'}</span>
-    );
-
-    renderInlineEditorInput = (path, node) => (
-        <input className={this.props.classes.inlineEditorInput}
-               value={this.state.edit.value}
-               autoFocus
-               autoCapitalize='off'
-               onChange={this.handleInlineEditorChange}
-               onKeyDown={this.handleInlineEditorKeyDown.bind(this, path, node)}
-               onBlur={() => this.saveInlineEditorValue(path, node)}
-        />
-    );
-
-    handleInlineEditorChange = event => {
-        let value = event.target.value;
-        this.setState(state => ({
-            edit: {
-                treeIndex: state.edit.treeIndex,
-                value
-            }
-        }));
-    };
-
-    handleInlineEditorKeyDown = (path, node, event) => {
-        switch (event.key) {
-            case 'Enter':
-                this.saveInlineEditorValue(path, node);
-                break;
-            case 'Escape':
-                this.setState({ edit: null });
-                break;
-            default:
-                return;
-        }
-    };
-
-    saveInlineEditorValue = (path, node) => {
-        this.setState(state => {
-            let newTreeData = changeNodeAtPath({
-                treeData: state.treeDataHistory.present,
-                path,
-                newNode: {...node, title: state.edit.value},
-                getNodeKey: ({ treeIndex }) => treeIndex
-            });
-            return {
-                treeDataHistory: this.addToHistory(newTreeData),
-                edit: null
-            };
-        })
+        let handleClick = event => this.openMenu(node, path, treeIndex, event.currentTarget);
+        let chip = <Chip classes={classes} label={node.title} onClick={handleClick} />;
+        return connectDragSource(<div>{chip}</div>);
     };
 
     openMenu = (node, path, treeIndex, anchorEl) => {
         this.setState({
-            menu: { open: true, node, path, treeIndex, anchorEl }
+            mode: modes.menu,
+            menu: { node, path, treeIndex, anchorEl }
         });
     };
 
@@ -374,7 +303,7 @@ class App extends Component {
 
     renderMenu = () => (
         <Menu anchorEl={this.state.menu.anchorEl}
-              open={this.state.menu.open}
+              open={this.state.mode === modes.menu}
               onClose={this.closeMenu}
               disableRestoreFocus>
             {this.canGoToDefinition() && this.renderGo()}
@@ -384,13 +313,65 @@ class App extends Component {
         </Menu>
     );
 
+    renderEditMenu = () => (
+        <Popover
+            classes={{ paper: this.props.classes.popover }}
+            anchorEl={this.state.menu.anchorEl}
+            getContentAnchorEl={() => findDOMNode(this.editInput)}
+            open={this.state.mode === modes.edit}
+            onClose={() => this.saveEditResult()}>
+            {this.renderEditInput()}
+            {Object.entries(primitiveFunctions).map(([name, info]) => this.renderFunctionMenuItem(name))}
+        </Popover>
+    );
+
+    renderEditInput = () => (
+        <Input
+            className={this.props.classes.editInput}
+            autoFocus
+            autoCapitalize="off"
+            placeholder="Enter value"
+            value={this.state.editValue}
+            onChange={this.handleEditInputChange}
+            onKeyDown={this.handleEditInputKeyDown}
+            ref={node => {
+                this.editInput = node;
+            }} />
+    );
+
+    handleEditInputChange = event => {
+        this.setState({ editValue: event.target.value });
+    };
+
+    handleEditInputKeyDown = (event) => {
+        if (event.key === 'Enter') {
+            this.saveEditResult();
+        }
+    };
+
+    saveEditResult = result => {
+        this.setState(state => {
+            let { treeDataHistory, menu, editValue } = state;
+            result = result || editValue;
+            let newTreeData = changeNodeAtPath({
+                treeData: treeDataHistory.present,
+                path: menu.path,
+                newNode: { ...menu.node, title: result },
+                getNodeKey: ({ treeIndex }) => treeIndex
+            });
+            return {
+                treeDataHistory: this.addToHistory(newTreeData),
+                mode: modes.default
+            };
+        })
+    };
+
+    renderFunctionMenuItem = name => (
+        <MenuItem key={name} onClick={this.saveEditResult.bind(this, name)}>{name}</MenuItem>
+    );
+
     closeMenu = () => {
-        this.setState(state => ({
-            menu: {
-                ...this.state.menu, // this data is still needed for the close transition
-                open: false
-            }
-        }));
+        this.setState({ mode: modes.default });
     };
 
     canGoToDefinition = () => this.state.menu.node && primitiveFunctions[this.state.menu.node.title];
@@ -403,12 +384,9 @@ class App extends Component {
 
     editNode = () => {
         this.setState(state => ({
-            edit: {
-                treeIndex: state.menu.treeIndex,
-                value: state.menu.node.title
-            }
+            mode: modes.edit,
+            editValue: state.menu.node.title
         }));
-        this.closeMenu();
     }
 
     removeNode = () => {
@@ -419,8 +397,7 @@ class App extends Component {
                 getNodeKey: ({ treeIndex }) => treeIndex
             });
             return resultTreeData.length === 0 ? {
-                treeDataHistory: this.addToHistory(initialTreeData),
-                edit: initialEdit
+                treeDataHistory: this.addToHistory(initialTreeData)
             } : {
                 treeDataHistory: this.addToHistory(resultTreeData)
             };
@@ -441,13 +418,9 @@ class App extends Component {
             });
             return {
                 treeDataHistory: this.addToHistory(result.treeData),
-                edit: {
-                    treeIndex: result.treeIndex,
-                    value: ''
-                }
+                mode: modes.default
             };
         });
-        this.closeMenu();
     };
 
     renderBottomBar = () => (
