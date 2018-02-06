@@ -392,11 +392,11 @@ class App extends Component {
         <Input
             className={this.props.classes.editInput}
             autoFocus
-            autoCapitalize="off"
             placeholder="Enter value"
             value={this.state.editValue}
             onChange={this.handleEditInputChange}
             onKeyDown={this.handleEditInputKeyDown}
+            inputProps={{ autoCapitalize: "off" }}
             ref={node => {
                 this.editInput = node;
             }} />
