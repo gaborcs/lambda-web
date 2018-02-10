@@ -389,9 +389,8 @@ class App extends Component {
     }
 
     renderEditInput = () => (
-        <Input
+        <AutoSelectInput
             className={this.props.classes.editInput}
-            autoFocus
             placeholder="Enter value"
             value={this.state.editValue}
             onChange={this.handleEditInputChange}
@@ -434,6 +433,22 @@ class App extends Component {
                 {evalNode(this.state.treeDataHistory.present[0]).toString()}
             </Typography>
         </Toolbar>
+    );
+}
+
+class AutoSelectInput extends React.Component {
+    componentDidMount() {
+        let element = findDOMNode(this.node);
+        element.focus();
+        element.select();
+    }
+
+    render = () => (
+        <Input
+            {...this.props}
+            inputRef={node => {
+                this.node = node;
+            }} />
     );
 }
 
