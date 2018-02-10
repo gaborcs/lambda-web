@@ -76,11 +76,6 @@ const styles = {
     bottomBar: {
         backgroundColor: theme.palette.grey[900]
     },
-    go: {
-        display: 'block',
-        outline: 0,
-        textDecoration: 'none'
-    },
     popover: {
         padding: '8px 0'
     },
@@ -313,6 +308,12 @@ class App extends Component {
         </Menu>
     );
 
+    canGoToDefinition = () => this.state.menu.node && primitiveFunctions[this.state.menu.node.title];
+
+    renderGo = () => (
+        <MenuItem component={Link} to={this.state.menu.node.title} onClick={this.closeMenu}>Go</MenuItem>
+    );
+
     initiateEdit = () => {
         this.setState(state => ({
             mode: modes.edit,
@@ -418,14 +419,6 @@ class App extends Component {
     closeMenu = () => {
         this.setState({ mode: modes.default });
     };
-
-    canGoToDefinition = () => this.state.menu.node && primitiveFunctions[this.state.menu.node.title];
-
-    renderGo = () => (
-        <Link className={this.props.classes.go} to={this.state.menu.node.title} onClick={this.closeMenu}>
-            <MenuItem>Go</MenuItem>
-        </Link>
-    );
 
     renderBottomBar = () => (
         <Toolbar className={this.props.classes.bottomBar}>
