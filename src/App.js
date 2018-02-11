@@ -10,6 +10,7 @@ import { MuiThemeProvider, createMuiTheme, withStyles } from 'material-ui/styles
 import Reboot from 'material-ui/Reboot';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
+import ButtonBase from 'material-ui/ButtonBase';
 import Typography from 'material-ui/Typography';
 import IconButton from 'material-ui/IconButton';
 import UndoIcon from 'material-ui-icons/Undo';
@@ -17,7 +18,8 @@ import RedoIcon from 'material-ui-icons/Redo';
 import Chip from 'material-ui/Chip';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import Popover from 'material-ui/Popover';
-import Input from 'material-ui/Input';
+import { FormControl } from 'material-ui/Form';
+import Input, { InputLabel } from 'material-ui/Input';
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 
 const chipHeight = 32;
@@ -36,16 +38,14 @@ const styles = {
         height: '100%',
         userSelect: 'none'
     },
-    title: {
-        flex: 1
+    appBarToolbar: {
+        justifyContent: 'space-between'
     },
-    nameInput: {
-        width: '100%',
-        border: 0,
-        outline: 0,
-        backgroundColor: 'inherit',
-        font: 'inherit',
-        color: 'inherit'
+    name: {
+        padding: '8px 16px'
+    },
+    renamer: {
+        padding: 8
     },
     primitiveFunctionDescription: {
         padding: 24
@@ -122,6 +122,7 @@ class App extends Component {
             present: initialTreeData,
             future: []
         },
+        renamer: { open: false },
         mode: modes.default,
         menu: {},
         editValue: ''
@@ -169,6 +170,7 @@ class App extends Component {
                 <Route exact path="/:name" render={this.renderPrimitiveFunction} />
                 <Route exact path="/" render={this.renderEvaluator} />
                 {this.renderPreview()}
+                {this.renderRenamer()}
                 {this.renderMenu()}
                 {this.renderEditMenu()}
             </MuiThemeProvider>
@@ -189,7 +191,7 @@ class App extends Component {
 
     renderAppBar = content => (
         <AppBar position="static" elevation={0} color="default">
-            <Toolbar>{content}</Toolbar>
+            <Toolbar className={this.props.classes.appBarToolbar}>{content}</Toolbar>
         </AppBar>
     );
 
@@ -207,26 +209,29 @@ class App extends Component {
 
     renderAppBarForEvaluator = () => this.renderAppBar(
         <Fragment>
-            {this.renderNameInput()}
-            {this.renderUndoButton()}
-            {this.renderRedoButton()}
+            {this.renderName()}
+            {this.renderIconButtons()}
         </Fragment>
     );
 
-    renderNameInput = () => (
-        <Typography variant="title" className={this.props.classes.title}>
-            <input
-                className={this.props.classes.nameInput}
-                autoCapitalize="off"
-                placeholder="Name"
-                value={this.state.name}
-                onChange={this.handleNameChange} />
-        </Typography>
+    renderName = () => (
+        <ButtonBase className={this.props.classes.name} title="Rename" onClick={this.openRenamer}>
+            <Typography variant="title">{this.state.name || "unnamed"}</Typography>
+        </ButtonBase>
     );
 
-    handleNameChange = event => {
-        this.setState({ name: event.target.value });
-    }
+    openRenamer = event => {
+        this.setState({
+            renamer: { open: true, anchorEl: event.currentTarget, value: this.state.name }
+        });
+    };
+
+    renderIconButtons = () => (
+        <div>
+            {this.renderUndoButton()}
+            {this.renderRedoButton()}
+        </div>
+    );
 
     renderUndoButton = () => (
         <IconButton disabled={this.state.treeDataHistory.past.length === 0} onClick={this.undo}>
@@ -294,6 +299,49 @@ class App extends Component {
             root: this.props.classes.chip + ' ' + this.props.classes.pickedUp
         };
         return <div style={style}><Chip classes={classes} label={item.node.title} /></div>;
+    };
+
+    renderRenamer = () => (
+        <Popover
+            classes={{ paper: this.props.classes.renamer }}
+            anchorEl={this.state.renamer.anchorEl}
+            open={this.state.renamer.open}
+            onClose={this.saveRenameResult}
+            marginThreshold={0}>
+            {this.renderRenamerTextField()}
+        </Popover>
+    );
+
+    saveRenameResult = () => {
+        this.setState(state => ({
+            name: state.renamer.value,
+            renamer: { ...state.renamer, open: false }
+        }));
+    };
+
+    renderRenamerTextField = () => (
+        <FormControl>
+            <InputLabel htmlFor="renamer-input">Rename</InputLabel>
+            <AutoSelectInput
+                id="renamer-input"
+                value={this.state.renamer.value}
+                onChange={this.handleRenamerInputChange}
+                onKeyDown={this.handleRenamerInputKeyDown}
+                inputProps={{ autoCapitalize: "off" }} />
+        </FormControl>
+    );
+
+    handleRenamerInputChange = event => {
+        let value = event.target.value;
+        this.setState(state => ({
+            renamer: { ...state.renamer, value }
+        }));
+    };
+
+    handleRenamerInputKeyDown = event => {
+        if (event.key === 'Enter') {
+            this.saveRenameResult();
+        }
     };
 
     renderMenu = () => (
@@ -406,7 +454,7 @@ class App extends Component {
         this.setState({ editValue: event.target.value });
     };
 
-    handleEditInputKeyDown = (event) => {
+    handleEditInputKeyDown = event => {
         if (event.key === 'Enter') {
             this.saveEditMenuResult();
         }
