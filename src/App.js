@@ -406,36 +406,32 @@ class App extends Component {
 
     saveEditMenuResult = value => {
         this.setState(state => {
-            let newTreeData = state.mode === 'edit' ?
-                    this.editSelectedNode(state, value) :
-                    this.addNodeUnderSelected(state, value).treeData;
-            return {
-                treeDataHistory: this.addToHistory(newTreeData),
-                mode: modes.default
-            };
-        })
-    }
-
-    editSelectedNode = (state, value) => {
-        let { treeDataHistory, menu, editValue } = state;
-        return changeNodeAtPath({
-            treeData: treeDataHistory.present,
-            path: menu.path,
-            newNode: { ...menu.node, title: value || editValue },
-            getNodeKey: ({ treeIndex }) => treeIndex
+            let { treeDataHistory, mode, menu, editValue } = state;
+            value = value || editValue;
+            if (mode === 'edit') {
+                let valueChanged = value !== menu.node.title;
+                return valueChanged ? {
+                    treeDataHistory: this.addToHistory(changeNodeAtPath({
+                        treeData: treeDataHistory.present,
+                        path: menu.path,
+                        newNode: { ...menu.node, title: value },
+                        getNodeKey: ({ treeIndex }) => treeIndex
+                    }))
+                } : {}
+            } else {
+                return value ? {
+                    treeDataHistory: this.addToHistory(addNodeUnderParent({
+                        treeData: treeDataHistory.present,
+                        parentKey: menu.treeIndex,
+                        expandParent: true,
+                        newNode: { title: value },
+                        getNodeKey: ({ treeIndex }) => treeIndex
+                    }).treeData)
+                } : {};
+            }
         });
-    }
-    
-    addNodeUnderSelected = (state, value) => {
-        let { treeDataHistory, menu, editValue } = state;
-        return addNodeUnderParent({
-            treeData: treeDataHistory.present,
-            parentKey: menu.treeIndex,
-            expandParent: true,
-            newNode: { title: value || editValue },
-            getNodeKey: ({ treeIndex }) => treeIndex
-        });
-    }
+        this.closeMenu();
+    };
 
     renderEditInput = () => (
         <AutoSelectInput
