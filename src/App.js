@@ -278,7 +278,8 @@ class App extends Component {
         };
         let handleClick = event => this.openMenu(node, path, treeIndex, event.currentTarget);
         let chip = <Chip classes={classes} label={node.title} onClick={handleClick} />;
-        return connectDragSource(<div>{chip}</div>);
+        // the drag source is an anchor tag since it seems to cause a vibration on long press
+        return connectDragSource(<a onContextMenu={e => e.preventDefault()}>{chip}</a>);
     };
 
     openMenu = (node, path, treeIndex, anchorEl) => {
