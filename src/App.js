@@ -60,6 +60,10 @@ const styles = {
         display: 'flex',
         alignItems: 'center'
     },
+    dragSource: {
+        padding: 8,
+        margin: -8
+    },
     chip: {
         minWidth: minTouchTargetSize
     },
@@ -279,7 +283,9 @@ class App extends Component {
         let handleClick = event => this.openMenu(node, path, treeIndex, event.currentTarget);
         let chip = <Chip classes={classes} label={node.title} onClick={handleClick} />;
         // the drag source is an anchor tag since it seems to cause a vibration on long press
-        return connectDragSource(<a onContextMenu={e => e.preventDefault()}>{chip}</a>);
+        return connectDragSource(
+            <a className={this.props.classes.dragSource} onContextMenu={e => e.preventDefault()}>{chip}</a>
+        );
     };
 
     openMenu = (node, path, treeIndex, anchorEl) => {
