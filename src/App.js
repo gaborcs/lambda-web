@@ -15,6 +15,7 @@ import Typography from 'material-ui/Typography';
 import IconButton from 'material-ui/IconButton';
 import UndoIcon from 'material-ui-icons/Undo';
 import RedoIcon from 'material-ui-icons/Redo';
+import List, { ListItem, ListItemText } from 'material-ui/List';
 import Chip from 'material-ui/Chip';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import Popover from 'material-ui/Popover';
@@ -171,8 +172,9 @@ class App extends Component {
         <Router>
             <MuiThemeProvider theme={theme}>
                 <Reboot />
-                <Route exact path="/:name" render={this.renderPrimitiveFunction} />
-                <Route exact path="/" render={this.renderEvaluator} />
+                <Route exact path="/" render={this.renderHomeScreen} />
+                <Route exact path="/primitives/:name" render={this.renderPrimitiveFunction} />
+                <Route exact path="/expressions/:name" render={this.renderEvaluator} />
                 {this.renderPreview()}
                 {this.renderRenamer()}
                 {this.renderMenu()}
@@ -181,17 +183,30 @@ class App extends Component {
         </Router>
     );
 
+    renderHomeScreen = () => (
+        <div className={this.props.classes.layoutContainer}>
+            {this.renderAppBar(<Typography variant="title">Expressions</Typography>)}
+            {this.renderExpressions()}
+        </div>
+    );
+
+    renderExpressions = () => (
+        <List>
+            <ListItem button component={Link} to="/expressions/unnamed">
+                <ListItemText primary="unnamed" />
+            </ListItem>
+        </List>
+    );
+
     renderPrimitiveFunction = ({ match }) => {
         let name = match.params.name;
         return (
             <div className={this.props.classes.layoutContainer}>
-                {this.renderAppBarForPrimitiveFunction(name)}
+                {this.renderAppBar(<Typography variant="title">{name}</Typography>)}
                 {this.renderPrimitiveFunctionDescription(primitiveFunctions[name].description)}
             </div>
         );
     };
-
-    renderAppBarForPrimitiveFunction = name => this.renderAppBar(<Typography variant="title">{name}</Typography>);
 
     renderAppBar = content => (
         <AppBar position="static" elevation={0} color="default">
@@ -366,7 +381,9 @@ class App extends Component {
     canGoToDefinition = () => this.state.menu.node && primitiveFunctions[this.state.menu.node.title];
 
     renderGo = () => (
-        <MenuItem component={Link} to={this.state.menu.node.title} onClick={this.closeMenu}>Go</MenuItem>
+        <MenuItem component={Link} to={"/primitives/" + this.state.menu.node.title} onClick={this.closeMenu}>
+            Go
+        </MenuItem>
     );
 
     initiateEdit = () => {
