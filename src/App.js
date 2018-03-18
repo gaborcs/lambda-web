@@ -7,7 +7,7 @@ import MultiBackend, { TouchTransition, Preview } from 'react-dnd-multi-backend'
 import withScrolling from 'react-dnd-scrollzone';
 import { SortableTreeWithoutDndContext as SortableTree, changeNodeAtPath, removeNodeAtPath, addNodeUnderParent } from 'react-sortable-tree';
 import { MuiThemeProvider, createMuiTheme, withStyles } from 'material-ui/styles';
-import Reboot from 'material-ui/Reboot';
+import CssBaseline from 'material-ui/CssBaseline';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import ButtonBase from 'material-ui/ButtonBase';
@@ -171,7 +171,7 @@ class App extends Component {
     render = () => (
         <Router>
             <MuiThemeProvider theme={theme}>
-                <Reboot />
+                <CssBaseline />
                 <Route exact path="/" render={this.renderHomeScreen} />
                 <Route exact path="/primitives/:name" render={this.renderPrimitiveFunction} />
                 <Route exact path="/expressions/:name" render={this.renderEvaluator} />
