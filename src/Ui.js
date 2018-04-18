@@ -76,7 +76,7 @@ class Ui extends Component {
 
     addNewExpression = () => {
         this.setState(state => ({
-            expressions: [ ExpressionPage.createNewExpression(), ...state.expressions ]
+            expressions: [ ...state.expressions, ExpressionPage.createNewExpression() ]
         }), this.redirectToNewExpression);
     };
 
