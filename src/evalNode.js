@@ -1,13 +1,12 @@
 import primitiveFunctions from './primitiveFunctions';
 
 export default node => {
-    let title = node.title;
+    let { type, value } = node;
     let children = node.children || [];
-    let isNumber = !isNaN(title);
-    if (isNumber) {
-        return +title;
-    } if (primitiveFunctions[title]) {
-        return primitiveFunctions[title].apply(children);
+    if (type === 'number') {
+        return value;
+    } if (type === 'primitive') {
+        return primitiveFunctions[value].apply(children);
     } else {
         return NaN;
     }

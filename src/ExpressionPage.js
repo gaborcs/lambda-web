@@ -74,7 +74,7 @@ const styles = theme => ({
     }
 });
 
-const initialTreeData = [{ title: '' }];
+const initialTreeData = [{ type: 'placeholder', value: '' }];
 
 const modes = { default: 'default', menu: 'menu', edit: 'edit', add: 'add' };
 
@@ -203,13 +203,16 @@ class ExpressionPage extends Component {
         let classes = {
             root: this.props.classes.chip
         };
+        let label = this.getNodeLabel(node);
         let handleClick = event => this.openMenu(node, path, treeIndex, event.currentTarget);
-        let chip = <Chip classes={classes} label={node.title} onClick={handleClick} />;
+        let chip = <Chip classes={classes} label={label} onClick={handleClick} />;
         // the drag source is an anchor tag since it seems to cause a vibration on long press
         return connectDragSource(
             <a className={this.props.classes.dragSource} onContextMenu={e => e.preventDefault()}>{chip}</a>
         );
     };
+
+    getNodeLabel = node => node.value;
 
     openMenu = (node, path, treeIndex, anchorEl) => {
         this.setState({
@@ -228,7 +231,8 @@ class ExpressionPage extends Component {
         let classes = {
             root: this.props.classes.chip + ' ' + this.props.classes.pickedUp
         };
-        return <div style={style}><Chip classes={classes} label={item.node.title} /></div>;
+        let label = this.getNodeLabel(item.node);
+        return <div style={style}><Chip classes={classes} label={label} /></div>;
     };
 
     renderRenamer = () => (
@@ -291,10 +295,13 @@ class ExpressionPage extends Component {
         </Menu>
     );
 
-    canGoToDefinition = () => this.state.menu.node && primitiveFunctions[this.state.menu.node.title];
+    canGoToDefinition = () => {
+        let { node } = this.state.menu;
+        return node && node.type === 'primitive' && primitiveFunctions[node.value];
+    };
 
     renderGo = () => (
-        <MenuItem component={Link} to={"/primitives/" + this.state.menu.node.title} onClick={this.closeMenu}>
+        <MenuItem component={Link} to={"/primitives/" + this.state.menu.node.value} onClick={this.closeMenu}>
             Go
         </MenuItem>
     );
@@ -302,9 +309,9 @@ class ExpressionPage extends Component {
     initiateEdit = () => {
         this.setState(state => ({
             mode: modes.edit,
-            editValue: state.menu.node.title
+            editValue: this.getNodeLabel(state.menu.node)
         }));
-    }
+    };
 
     removeNode = () => {
         let resultTreeData = removeNodeAtPath({
@@ -332,21 +339,29 @@ class ExpressionPage extends Component {
             open={this.state.mode === modes.edit || this.state.mode === modes.add}
             onClose={() => this.saveEditMenuResult()}>
             {this.renderEditInput()}
-            {Object.entries(primitiveFunctions).map(([name, info]) => this.renderFunctionMenuItem(name))}
+            {Object.entries(primitiveFunctions).map(([name, info]) => this.renderPrimitiveFunctionMenuItem(name))}
         </Popover>
     );
 
-    saveEditMenuResult = value => {
+    saveEditMenuResult = (type, value) => {
         let { mode, menu, editValue } = this.state;
         let { treeDataHistory } = this.props.expression;
-        value = value || editValue;
+        if (!type) {
+            if (isNaN(editValue)) {
+                type = 'placeholder';
+                value = editValue;
+            } else {
+                type = 'number';
+                value = +editValue;
+            }
+        }
         if (mode === 'edit') {
-            let valueChanged = value !== menu.node.title;
+            let valueChanged = type !== menu.node.type || value !== menu.node.value;
             if (valueChanged) {
                 this.addToHistory(changeNodeAtPath({
                     treeData: treeDataHistory.present,
                     path: menu.path,
-                    newNode: { ...menu.node, title: value },
+                    newNode: { ...menu.node, type, value },
                     getNodeKey: ({ treeIndex }) => treeIndex
                 }));
             }
@@ -356,7 +371,7 @@ class ExpressionPage extends Component {
                     treeData: treeDataHistory.present,
                     parentKey: menu.treeIndex,
                     expandParent: true,
-                    newNode: { title: value },
+                    newNode: { type, value },
                     getNodeKey: ({ treeIndex }) => treeIndex
                 }).treeData);
             }
@@ -387,8 +402,8 @@ class ExpressionPage extends Component {
         }
     };
 
-    renderFunctionMenuItem = name => (
-        <MenuItem key={name} onClick={this.saveEditMenuResult.bind(this, name)}>{name}</MenuItem>
+    renderPrimitiveFunctionMenuItem = name => (
+        <MenuItem key={name} onClick={this.saveEditMenuResult.bind(this, 'primitive', name)}>{name}</MenuItem>
     );
 
     closeMenu = () => {
