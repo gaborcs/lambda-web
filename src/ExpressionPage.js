@@ -115,11 +115,11 @@ class ExpressionPage extends Component {
 
     addToHistory = treeData => {
         let { past, present } = this.props.expression.treeDataHistory;
-        return {
+        this.setTreeDataHistory({
             past: [...past, present],
             present: treeData,
             future: []
-        };
+        });
     };
 
     render = () => (
@@ -181,7 +181,7 @@ class ExpressionPage extends Component {
     renderSortableTree = () => (
         <SortableTree
             treeData={this.props.expression.treeDataHistory.present}
-            onChange={treeData => this.setTreeDataHistory(this.addToHistory(treeData))}
+            onChange={this.addToHistory}
             rowHeight={minTouchTargetSize}
             scaffoldBlockPxWidth={minTouchTargetSize}
             nodeContentRenderer={this.renderNodeContent}
@@ -313,7 +313,7 @@ class ExpressionPage extends Component {
             getNodeKey: ({ treeIndex }) => treeIndex
         });
         let newTreeData = resultTreeData.length === 0 ? initialTreeData : resultTreeData;
-        this.setTreeDataHistory(this.addToHistory(newTreeData));
+        this.addToHistory(newTreeData);
         this.closeMenu();
     };
 
@@ -343,22 +343,22 @@ class ExpressionPage extends Component {
         if (mode === 'edit') {
             let valueChanged = value !== menu.node.title;
             if (valueChanged) {
-                this.setTreeDataHistory(this.addToHistory(changeNodeAtPath({
+                this.addToHistory(changeNodeAtPath({
                     treeData: treeDataHistory.present,
                     path: menu.path,
                     newNode: { ...menu.node, title: value },
                     getNodeKey: ({ treeIndex }) => treeIndex
-                })));
+                }));
             }
         } else {
             if (value) {
-                this.setTreeDataHistory(this.addToHistory(addNodeUnderParent({
+                this.addToHistory(addNodeUnderParent({
                     treeData: treeDataHistory.present,
                     parentKey: menu.treeIndex,
                     expandParent: true,
                     newNode: { title: value },
                     getNodeKey: ({ treeIndex }) => treeIndex
-                }).treeData));
+                }).treeData);
             }
         }
         this.closeMenu();
