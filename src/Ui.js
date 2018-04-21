@@ -104,6 +104,7 @@ class Ui extends Component {
         let expressionIndex = match.params.index;
         return (
             <ExpressionPage
+                expressions={this.state.expressions}
                 expression={this.state.expressions[expressionIndex]}
                 setExpression={this.setExpression.bind(this, expressionIndex)} />
         );

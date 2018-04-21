@@ -17,7 +17,7 @@ import { FormControl } from 'material-ui/Form';
 import Input, { InputLabel } from 'material-ui/Input';
 import { Link } from 'react-router-dom';
 import LambdaAppBar from './LambdaAppBar';
-import evalNode from './evalNode';
+import evaluator from './evaluator';
 import primitiveFunctions from './primitiveFunctions';
 
 const chipHeight = 32;
@@ -212,7 +212,7 @@ class ExpressionPage extends Component {
         );
     };
 
-    getNodeLabel = node => node.value;
+    getNodeLabel = node => node.type === 'expression' ? this.props.expressions[node.value].name : node.value;
 
     openMenu = (node, path, treeIndex, anchorEl) => {
         this.setState({
@@ -340,6 +340,7 @@ class ExpressionPage extends Component {
             onClose={() => this.saveEditMenuResult()}>
             {this.renderEditInput()}
             {Object.entries(primitiveFunctions).map(([name, info]) => this.renderPrimitiveFunctionMenuItem(name))}
+            {this.props.expressions.filter(expr => expr.name).map(this.renderExpressionMenuItem)}
         </Popover>
     );
 
@@ -403,7 +404,15 @@ class ExpressionPage extends Component {
     };
 
     renderPrimitiveFunctionMenuItem = name => (
-        <MenuItem key={name} onClick={this.saveEditMenuResult.bind(this, 'primitive', name)}>{name}</MenuItem>
+        <MenuItem key={`primitive-${name}`} onClick={this.saveEditMenuResult.bind(this, 'primitive', name)}>
+            {name}
+        </MenuItem>
+    );
+
+    renderExpressionMenuItem = (expression, index) => (
+        <MenuItem key={`expression-${index}`} onClick={this.saveEditMenuResult.bind(this, 'expression', index)}>
+            {expression.name}
+        </MenuItem>
     );
 
     closeMenu = () => {
@@ -413,7 +422,7 @@ class ExpressionPage extends Component {
     renderBottomBar = () => (
         <Toolbar className={this.props.classes.bottomBar}>
             <Typography variant="subheading">
-                {evalNode(this.props.expression.treeDataHistory.present[0]).toString()}
+                {evaluator(this.props.expressions)(this.props.expression.treeDataHistory.present[0]).toString()}
             </Typography>
         </Toolbar>
     );
