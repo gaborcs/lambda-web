@@ -367,7 +367,7 @@ class ExpressionPage extends Component {
                 }));
             }
         } else {
-            if (value) {
+            if (value !== '') {
                 this.addToHistory(addNodeUnderParent({
                     treeData: treeDataHistory.present,
                     parentKey: menu.treeIndex,
@@ -422,10 +422,19 @@ class ExpressionPage extends Component {
     renderBottomBar = () => (
         <Toolbar className={this.props.classes.bottomBar}>
             <Typography variant="subheading">
-                {evaluator(this.props.expressions)(this.props.expression.treeDataHistory.present[0]).toString()}
+                {this.eval().toString()}
             </Typography>
         </Toolbar>
     );
+
+    eval = () => {
+        let expressionNodes = this.props.expressions.map(this.getExpressionNode);
+        let evalNode = evaluator(expressionNodes);
+        let node = this.getExpressionNode(this.props.expression);
+        return evalNode(node);
+    };
+
+    getExpressionNode = expression => expression.treeDataHistory.present[0];
 
     static createNewExpression() {
         return {
