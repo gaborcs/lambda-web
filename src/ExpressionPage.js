@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { findDOMNode } from 'react-dom';
 import { Preview } from 'react-dnd-multi-backend';
 import withScrolling from 'react-dnd-scrollzone';
-import { SortableTreeWithoutDndContext as SortableTree, changeNodeAtPath, removeNodeAtPath, addNodeUnderParent } from 'react-sortable-tree';
+import { SortableTreeWithoutDndContext as SortableTree, changeNodeAtPath, removeNodeAtPath, addNodeUnderParent, getFlatDataFromTree } from 'react-sortable-tree';
 import { withStyles } from 'material-ui/styles';
 import ButtonBase from 'material-ui/ButtonBase';
 import Typography from 'material-ui/Typography';
@@ -22,6 +22,7 @@ import primitiveFunctions from './primitiveFunctions';
 
 const chipHeight = 32;
 const minTouchTargetSize = 48;
+const lambdaChar = '\u03BB';
 
 const styles = theme => ({
     root: {
@@ -85,7 +86,8 @@ class ExpressionPage extends Component {
         renamer: { open: false },
         mode: modes.default,
         menu: {},
-        editValue: ''
+        editValue: '',
+        variables: [] // stored as state to avoid changing them before the menu animation finishes
     };
 
     undo = () => {
@@ -212,7 +214,16 @@ class ExpressionPage extends Component {
         );
     };
 
-    getNodeLabel = node => node.type === 'expression' ? this.props.expressions[node.value].name : node.value;
+    getNodeLabel = node => {
+        switch (node.type) {
+            case 'expression':
+                return this.props.expressions[node.value].name;
+            case 'lambda':
+                return lambdaChar + node.value;
+            default:
+                return node.value;
+        }
+    };
 
     openMenu = (node, path, treeIndex, anchorEl) => {
         this.setState({
@@ -309,8 +320,19 @@ class ExpressionPage extends Component {
     initiateEdit = () => {
         this.setState(state => ({
             mode: modes.edit,
-            editValue: this.getNodeLabel(state.menu.node)
+            editValue: this.getNodeLabel(state.menu.node),
+            variables: this.getVariables()
         }));
+    };
+
+    getVariables = () => {
+        let flatData = getFlatDataFromTree({
+            treeData: this.props.expression.treeDataHistory.present,
+            getNodeKey: ({ treeIndex }) => treeIndex
+        });
+        let nodes = flatData.map(({ node }) => node);
+        let lambdaNodes = nodes.filter(node => node.type === 'lambda');
+        return lambdaNodes.map(node => node.value);
     };
 
     removeNode = () => {
@@ -327,7 +349,8 @@ class ExpressionPage extends Component {
     initiateAdd = () => {
         this.setState({
             mode: modes.add,
-            editValue: ''
+            editValue: '',
+            variables: this.getVariables()
         });
     };
 
@@ -339,6 +362,7 @@ class ExpressionPage extends Component {
             open={this.state.mode === modes.edit || this.state.mode === modes.add}
             onClose={() => this.saveEditMenuResult()}>
             {this.renderEditInput()}
+            {this.state.variables.map(this.renderVariableMenuItem)}
             {Object.entries(primitiveFunctions).map(([name, info]) => this.renderPrimitiveFunctionMenuItem(name))}
             {this.props.expressions.filter(expr => expr.name).map(this.renderExpressionMenuItem)}
         </Popover>
@@ -348,7 +372,10 @@ class ExpressionPage extends Component {
         let { mode, menu, editValue } = this.state;
         let { treeDataHistory } = this.props.expression;
         if (!type) {
-            if (isNaN(editValue)) {
+            if (editValue.startsWith(lambdaChar)) {
+                type = 'lambda';
+                value = editValue.substr(1);
+            } else if (isNaN(editValue)) {
                 type = 'placeholder';
                 value = editValue;
             } else {
@@ -383,7 +410,6 @@ class ExpressionPage extends Component {
     renderEditInput = () => (
         <AutoSelectInput
             className={this.props.classes.editInput}
-            placeholder="Enter value"
             value={this.state.editValue}
             onChange={this.handleEditInputChange}
             onKeyDown={this.handleEditInputKeyDown}
@@ -394,7 +420,11 @@ class ExpressionPage extends Component {
     );
 
     handleEditInputChange = event => {
-        this.setState({ editValue: event.target.value });
+        let { value } = event.target;
+        let isValid = value.startsWith(lambdaChar) || !isNaN(value);
+        this.setState({
+            editValue: isValid ? value : lambdaChar + value
+        });
     };
 
     handleEditInputKeyDown = event => {
@@ -402,6 +432,12 @@ class ExpressionPage extends Component {
             this.saveEditMenuResult();
         }
     };
+
+    renderVariableMenuItem = (variable, index) => (
+        <MenuItem key={`variable-${index}`} onClick={this.saveEditMenuResult.bind(this, 'variable', variable)}>
+            {variable}
+        </MenuItem>
+    );
 
     renderPrimitiveFunctionMenuItem = name => (
         <MenuItem key={`primitive-${name}`} onClick={this.saveEditMenuResult.bind(this, 'primitive', name)}>
