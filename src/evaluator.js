@@ -17,7 +17,7 @@ export default expressions => {
             case 'number':
                 return value;
             case 'primitive':
-                return primitiveFunctions[value].apply(evalWithEnv(env), children);
+                return applyArgs(primitiveFunctions[value].apply, children);
             case 'expression':
                 let expression = evalWithEnv(env)(expressions[value]);
                 return applyArgs(expression, children);
