@@ -19,6 +19,7 @@ import { Link } from 'react-router-dom';
 import LambdaAppBar from './LambdaAppBar';
 import evaluator from './evaluator';
 import primitiveFunctions from './primitiveFunctions';
+import specialForms from './specialForms';
 
 const chipHeight = 32;
 const minTouchTargetSize = 48;
@@ -363,6 +364,7 @@ class ExpressionPage extends Component {
             onClose={() => this.saveEditMenuResult()}>
             {this.renderEditInput()}
             {this.state.variables.map(this.renderVariableMenuItem)}
+            {Object.entries(specialForms).map(([name, info]) => this.renderSpecialFormMenuItem(name))}
             {Object.entries(primitiveFunctions).map(([name, info]) => this.renderPrimitiveFunctionMenuItem(name))}
             {this.props.expressions.filter(expr => expr.name).map(this.renderExpressionMenuItem)}
         </Popover>
@@ -439,6 +441,12 @@ class ExpressionPage extends Component {
         </MenuItem>
     );
 
+    renderSpecialFormMenuItem = name => (
+        <MenuItem key={`special-${name}`} onClick={this.saveEditMenuResult.bind(this, 'special', name)}>
+            {name}
+        </MenuItem>
+    );
+
     renderPrimitiveFunctionMenuItem = name => (
         <MenuItem key={`primitive-${name}`} onClick={this.saveEditMenuResult.bind(this, 'primitive', name)}>
             {name}
@@ -467,7 +475,11 @@ class ExpressionPage extends Component {
         let expressionNodes = this.props.expressions.map(this.getExpressionNode);
         let evalNode = evaluator(expressionNodes);
         let node = this.getExpressionNode(this.props.expression);
-        return evalNode(node);
+        try {
+            return evalNode(node);
+        } catch (e) {
+            return e.message;
+        }
     };
 
     getExpressionNode = expression => expression.treeDataHistory.present[0];

@@ -1,3 +1,4 @@
+import specialForms from './specialForms';
 import primitiveFunctions from './primitiveFunctions';
 
 export default expressions => {
@@ -16,6 +17,8 @@ export default expressions => {
         switch (type) {
             case 'number':
                 return value;
+            case 'special':
+                return specialForms[value].apply(evalWithEnv(env), children);
             case 'primitive':
                 return applyArgs(primitiveFunctions[value].apply, children);
             case 'expression':
