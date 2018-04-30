@@ -9,6 +9,7 @@ import { Route, Link, withRouter } from 'react-router-dom';
 import LambdaAppBar from './LambdaAppBar';
 import ExpressionPage from './ExpressionPage';
 import primitiveFunctions from './primitiveFunctions';
+import initialExpressions from './initialExpressions.json';
 
 const theme = createMuiTheme({
     palette: {
@@ -34,7 +35,10 @@ const styles = {
 
 class Ui extends Component {
     state = {
-        expressions: []
+        expressions: initialExpressions.map(({ name, treeData }) => ({
+            name,
+            treeDataHistory: { past: [], present: treeData, future: [] }
+        }))
     };
 
     render = () => (
