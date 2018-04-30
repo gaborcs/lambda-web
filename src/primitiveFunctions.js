@@ -17,6 +17,6 @@ export default {
     },
     '/': {
         description: 'Primitive function that returns the first argument divided by the second argument.',
-        apply: a => b => a * b
+        apply: a => b => a / b
     }
 };
