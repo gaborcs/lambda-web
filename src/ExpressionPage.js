@@ -224,7 +224,7 @@ class ExpressionPage extends Component {
         switch (node.type) {
             case 'expression':
                 return this.props.expressions[node.value].name;
-            case 'lambda':
+            case 'function':
                 return lambdaChar + node.value;
             default:
                 return node.value;
@@ -337,8 +337,8 @@ class ExpressionPage extends Component {
             getNodeKey: ({ treeIndex }) => treeIndex
         });
         let nodes = flatData.map(({ node }) => node);
-        let lambdaNodes = nodes.filter(node => node.type === 'lambda');
-        return lambdaNodes.map(node => node.value);
+        let functionNodes = nodes.filter(node => node.type === 'function');
+        return functionNodes.map(node => node.value);
     };
 
     removeNode = () => {
@@ -380,7 +380,7 @@ class ExpressionPage extends Component {
         let { treeDataHistory } = this.props.expression;
         if (!type) {
             if (editValue.startsWith(lambdaChar)) {
-                type = 'lambda';
+                type = 'function';
                 value = editValue.substr(1);
             } else if (isNaN(editValue)) {
                 type = 'placeholder';

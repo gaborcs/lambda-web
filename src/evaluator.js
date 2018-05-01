@@ -24,7 +24,7 @@ export default expressions => {
             case 'expression':
                 let expression = evalWithEnv(env)(expressions[value]);
                 return applyArgs(expression, children);
-            case 'lambda':
+            case 'function':
                 let [ body, ...args ] = children;
                 let f = evaluatedArg => evalWithEnv({
                     ...env,

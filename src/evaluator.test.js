@@ -1,9 +1,9 @@
 import evaluator from './evaluator';
 
-it('can apply a lambda immediately', () => {
+it('can apply a function immediately', () => {
     let evalNode = evaluator([]);
     let node = {
-        type: 'lambda',
+        type: 'function',
         value: 'x',
         children: [{
             type: 'variable',
@@ -17,9 +17,9 @@ it('can apply a lambda immediately', () => {
     expect(evalResult).toBe(1);
 });
 
-it('can apply a lambda defined in an expression', () => {
+it('can apply a function defined in an expression', () => {
     let identity = {
-        type: 'lambda',
+        type: 'function',
         value: 'x',
         children: [{
             type: 'variable',
