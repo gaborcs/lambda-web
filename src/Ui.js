@@ -8,6 +8,7 @@ import List, { ListItem, ListItemText } from 'material-ui/List';
 import { Route, Link, withRouter } from 'react-router-dom';
 import LambdaAppBar from './LambdaAppBar';
 import ExpressionPage from './ExpressionPage';
+import specialForms from './specialForms';
 import primitiveFunctions from './primitiveFunctions';
 import initialExpressions from './initialExpressions.json';
 
@@ -28,7 +29,7 @@ const styles = {
         right: 16,
         bottom: 16
     },
-    primitiveFunctionDescription: {
+    primitiveDescription: {
         padding: 24
     }
 };
@@ -45,7 +46,8 @@ class Ui extends Component {
         <MuiThemeProvider theme={theme}>
             <CssBaseline />
             <Route exact path="/" render={this.renderHomeScreen} />
-            <Route exact path="/primitives/:name" render={this.renderPrimitiveFunction} />
+            <Route exact path="/special-forms/:name" render={this.renderSpecialForm} />
+            <Route exact path="/primitive-functions/:name" render={this.renderPrimitiveFunction} />
             <Route exact path="/expressions/:index" render={this.renderExpressionPage} />
         </MuiThemeProvider>
     );
@@ -88,20 +90,27 @@ class Ui extends Component {
         let newExpressionIndex = this.state.expressions.length - 1;
         let newExpressionPath = this.getExpressionPath(newExpressionIndex);
         this.props.history.push(newExpressionPath);
-    }
-
-    renderPrimitiveFunction = ({ match }) => {
-        let name = match.params.name;
-        return (
-            <div className={this.props.classes.layoutContainer}>
-                <LambdaAppBar><Typography variant="title">{name}</Typography></LambdaAppBar>
-                {this.renderPrimitiveFunctionDescription(primitiveFunctions[name].description)}
-            </div>
-        );
     };
 
-    renderPrimitiveFunctionDescription = description => (
-        <Typography className={this.props.classes.primitiveFunctionDescription}>{description}</Typography>
+    renderSpecialForm = ({ match }) => {
+        let name = decodeURIComponent(match.params.name);
+        return this.renderPrimitiveWithDescription(name, specialForms[name].description);
+    };
+
+    renderPrimitiveFunction = ({ match }) => {
+        let name = decodeURIComponent(match.params.name);
+        return this.renderPrimitiveWithDescription(name, primitiveFunctions[name].description);
+    };
+
+    renderPrimitiveWithDescription = (name, description) => (
+        <div className={this.props.classes.layoutContainer}>
+            <LambdaAppBar><Typography variant="title">{name}</Typography></LambdaAppBar>
+            {this.renderPrimitiveDescription(description)}
+        </div>
+    );
+
+    renderPrimitiveDescription = description => (
+        <Typography className={this.props.classes.primitiveDescription}>{description}</Typography>
     );
 
     renderExpressionPage = ({ match }) => {

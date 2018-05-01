@@ -327,8 +327,10 @@ class ExpressionPage extends Component {
             return null;
         }
         switch (node.type) {
+            case 'special':
+                return '/special-forms/' + encodeURIComponent(node.value);
             case 'primitive':
-                return '/primitives/' + node.value;
+                return '/primitive-functions/' + encodeURIComponent(node.value);
             case 'expression':
                 return '/expressions/' + node.value;
             default:
