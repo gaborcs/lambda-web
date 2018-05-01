@@ -305,23 +305,36 @@ class ExpressionPage extends Component {
               open={this.state.mode === modes.menu}
               onClose={this.closeMenu}
               disableRestoreFocus>
-            {this.canGoToDefinition() && this.renderGo()}
+            {this.renderGoIfNeeded()}
             <MenuItem onClick={this.initiateEdit}>Edit</MenuItem>
             <MenuItem onClick={this.removeNode}>Delete</MenuItem>
             <MenuItem onClick={this.initiateAdd}>Add child</MenuItem>
         </Menu>
     );
 
-    canGoToDefinition = () => {
-        let { node } = this.state.menu;
-        return node && node.type === 'primitive' && primitiveFunctions[node.value];
+    renderGoIfNeeded = () => {
+        let path = this.getLinkPathToMenuNode();
+        return path && (
+            <MenuItem component={Link} to={path} onClick={this.closeMenu}>
+                Go
+            </MenuItem>
+        );
     };
 
-    renderGo = () => (
-        <MenuItem component={Link} to={"/primitives/" + this.state.menu.node.value} onClick={this.closeMenu}>
-            Go
-        </MenuItem>
-    );
+    getLinkPathToMenuNode = () => {
+        let { node } = this.state.menu;
+        if (!node) {
+            return null;
+        }
+        switch (node.type) {
+            case 'primitive':
+                return '/primitives/' + node.value;
+            case 'expression':
+                return '/expressions/' + node.value;
+            default:
+                return null;
+        }
+    };
 
     initiateEdit = () => {
         this.setState(state => ({
