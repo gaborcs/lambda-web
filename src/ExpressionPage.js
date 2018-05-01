@@ -481,7 +481,8 @@ class ExpressionPage extends Component {
         let evalNode = evaluator(expressionNodes);
         let node = this.getExpressionNode(this.props.expression);
         try {
-            return evalNode(node);
+            let value = evalNode(node);
+            return typeof value === 'function' ? lambdaChar : value;
         } catch (e) {
             return e.message;
         }
