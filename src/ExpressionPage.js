@@ -33,7 +33,12 @@ const styles = theme => ({
         userSelect: 'none'
     },
     name: {
-        padding: '8px 16px'
+        padding: 8,
+        marginLeft: -8,
+        overflow: 'hidden'
+    },
+    appBarButtons: {
+        flex: '0 0 auto'
     },
     renamer: {
         padding: 8
@@ -140,13 +145,13 @@ class ExpressionPage extends Component {
     renderAppBar = () => (
         <LambdaAppBar>
             {this.renderName()}
-            {this.renderIconButtons()}
+            {this.renderAppBarButtons()}
         </LambdaAppBar>
     );
 
     renderName = () => (
         <ButtonBase className={this.props.classes.name} title="Rename" onClick={this.openRenamer}>
-            <Typography variant="title">{this.props.expression.name || "unnamed"}</Typography>
+            <Typography variant="title" noWrap>{this.props.expression.name || "unnamed"}</Typography>
         </ButtonBase>
     );
 
@@ -156,8 +161,8 @@ class ExpressionPage extends Component {
         });
     };
 
-    renderIconButtons = () => (
-        <div>
+    renderAppBarButtons = () => (
+        <div className={this.props.classes.appBarButtons}>
             {this.renderUndoButton()}
             {this.renderRedoButton()}
         </div>
