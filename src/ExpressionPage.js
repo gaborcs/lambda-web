@@ -386,7 +386,7 @@ class ExpressionPage extends Component {
             {this.state.variables.map(this.renderVariableMenuItem)}
             {Object.entries(specialForms).map(([name, info]) => this.renderSpecialFormMenuItem(name))}
             {Object.entries(primitiveFunctions).map(([name, info]) => this.renderPrimitiveFunctionMenuItem(name))}
-            {this.props.expressions.filter(expr => expr.name).map(this.renderExpressionMenuItem)}
+            {this.props.expressions.map(this.renderExpressionMenuItemIfNamed)}
         </Popover>
     );
 
@@ -471,6 +471,10 @@ class ExpressionPage extends Component {
         <MenuItem key={`primitive-${name}`} onClick={this.saveEditMenuResult.bind(this, 'primitive', name)}>
             {name}
         </MenuItem>
+    );
+
+    renderExpressionMenuItemIfNamed = (expression, index) => (
+        expression.name && this.renderExpressionMenuItem(expression, index)
     );
 
     renderExpressionMenuItem = (expression, index) => (
