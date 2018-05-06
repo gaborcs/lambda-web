@@ -443,9 +443,8 @@ class ExpressionPage extends Component {
 
     handleEditInputChange = event => {
         let { value } = event.target;
-        let isValid = value.startsWith(lambdaChar) || !isNaN(value);
         this.setState({
-            editValue: isValid ? value : lambdaChar + value
+            editValue: value === '.' ? lambdaChar : value
         });
     };
 
