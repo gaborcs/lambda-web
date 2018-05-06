@@ -453,7 +453,9 @@ class ExpressionPage extends Component {
 
     renderEditMenuItems = () => this.getEditMenuItems().map(this.renderEditMenuItem);
 
-    getEditMenuItems = () => [
+    getEditMenuItems = () => this.getAllPossibleEditMenuItems().filter(this.matchesSearch);
+
+    getAllPossibleEditMenuItems = () => [
         ...this.state.variables.map(variable => ({ name: variable, type: 'variable', value: variable })),
         ...Object.entries(specialForms).map(([name, info]) => ({ name, type: 'special', value: name })),
         ...Object.entries(primitiveFunctions).map(([name, info]) => ({ name, type: 'primitive', value: name })),
@@ -461,6 +463,8 @@ class ExpressionPage extends Component {
                 .map((expression, index) => ({ name: expression.name, type: 'expression', value: index }))
                 .filter(item => item.name)
     ];
+
+    matchesSearch = item => item.name.startsWith(this.state.editValue);
 
     renderEditMenuItem = (item, index) => (
         <MenuItem key={index} onClick={this.saveEditMenuResult.bind(this, item.type, item.value)}>
