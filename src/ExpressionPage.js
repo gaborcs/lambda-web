@@ -383,10 +383,7 @@ class ExpressionPage extends Component {
             open={this.state.mode === modes.edit || this.state.mode === modes.add}
             onClose={() => this.saveEditMenuResult()}>
             {this.renderEditInput()}
-            {this.state.variables.map(this.renderVariableMenuItem)}
-            {Object.entries(specialForms).map(([name, info]) => this.renderSpecialFormMenuItem(name))}
-            {Object.entries(primitiveFunctions).map(([name, info]) => this.renderPrimitiveFunctionMenuItem(name))}
-            {this.props.expressions.map(this.renderExpressionMenuItemIfNamed)}
+            {this.renderEditMenuItems()}
         </Popover>
     );
 
@@ -454,31 +451,20 @@ class ExpressionPage extends Component {
         }
     };
 
-    renderVariableMenuItem = (variable, index) => (
-        <MenuItem key={`variable-${index}`} onClick={this.saveEditMenuResult.bind(this, 'variable', variable)}>
-            {variable}
-        </MenuItem>
-    );
+    renderEditMenuItems = () => this.getEditMenuItems().map(this.renderEditMenuItem);
 
-    renderSpecialFormMenuItem = name => (
-        <MenuItem key={`special-${name}`} onClick={this.saveEditMenuResult.bind(this, 'special', name)}>
-            {name}
-        </MenuItem>
-    );
+    getEditMenuItems = () => [
+        ...this.state.variables.map(variable => ({ name: variable, type: 'variable', value: variable })),
+        ...Object.entries(specialForms).map(([name, info]) => ({ name, type: 'special', value: name })),
+        ...Object.entries(primitiveFunctions).map(([name, info]) => ({ name, type: 'primitive', value: name })),
+        ...this.props.expressions
+                .map((expression, index) => ({ name: expression.name, type: 'expression', value: index }))
+                .filter(item => item.name)
+    ];
 
-    renderPrimitiveFunctionMenuItem = name => (
-        <MenuItem key={`primitive-${name}`} onClick={this.saveEditMenuResult.bind(this, 'primitive', name)}>
-            {name}
-        </MenuItem>
-    );
-
-    renderExpressionMenuItemIfNamed = (expression, index) => (
-        expression.name && this.renderExpressionMenuItem(expression, index)
-    );
-
-    renderExpressionMenuItem = (expression, index) => (
-        <MenuItem key={`expression-${index}`} onClick={this.saveEditMenuResult.bind(this, 'expression', index)}>
-            {expression.name}
+    renderEditMenuItem = (item, index) => (
+        <MenuItem key={index} onClick={this.saveEditMenuResult.bind(this, item.type, item.value)}>
+            {item.name}
         </MenuItem>
     );
 
