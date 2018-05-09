@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
+import { Route, Link, withRouter } from 'react-router-dom';
 import { MuiThemeProvider, createMuiTheme, withStyles } from 'material-ui/styles';
 import CssBaseline from 'material-ui/CssBaseline';
 import Button from 'material-ui/Button';
 import Typography from 'material-ui/Typography';
-import AddIcon from 'material-ui-icons/Add';
 import List, { ListItem, ListItemText } from 'material-ui/List';
-import { Route, Link, withRouter } from 'react-router-dom';
+import AddIcon from '@material-ui/icons/Add';
 import LambdaAppBar from './LambdaAppBar';
 import ExpressionPage from './ExpressionPage';
 import specialForms from './specialForms';
