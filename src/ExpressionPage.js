@@ -13,9 +13,11 @@ import Toolbar from 'material-ui/Toolbar';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import Popover from 'material-ui/Popover';
 import { FormControl } from 'material-ui/Form';
-import Input, { InputLabel } from 'material-ui/Input';
+import Input, { InputLabel, InputAdornment } from 'material-ui/Input';
 import UndoIcon from '@material-ui/icons/Undo';
 import RedoIcon from '@material-ui/icons/Redo';
+import InfoIcon from '@material-ui/icons/Info';
+import InfoOutlineIcon from '@material-ui/icons/InfoOutline';
 import LambdaAppBar from './LambdaAppBar';
 import evaluator from './evaluator';
 import primitiveFunctions from './primitiveFunctions';
@@ -76,8 +78,14 @@ const styles = theme => ({
     popover: {
         padding: '8px 0'
     },
+    editMenu: {
+        width: 450
+    },
     editInput: {
         margin: '8px 16px'
+    },
+    editInfo: {
+        padding: '8px 16px 0'
     }
 });
 
@@ -87,12 +95,17 @@ const modes = { default: 'default', menu: 'menu', edit: 'edit', add: 'add' };
 
 const ScrollingComponent = withScrolling('div');
 
+const preventDefault = event => {
+    event.preventDefault();
+};
+
 class ExpressionPage extends Component {
     state = {
         renamer: { open: false },
         mode: modes.default,
         menu: {},
         editValue: '',
+        editInfoOpen: false,
         variables: [] // stored as state to avoid changing them before the menu animation finishes
     };
 
@@ -216,7 +229,7 @@ class ExpressionPage extends Component {
         let chip = <Chip classes={classes} label={label} onClick={handleClick} />;
         // the drag source is an anchor tag since it seems to cause a vibration on long press
         return connectDragSource(
-            <a className={this.props.classes.dragSource} onContextMenu={e => e.preventDefault()}>{chip}</a>
+            <a className={this.props.classes.dragSource} onContextMenu={preventDefault}>{chip}</a>
         );
     };
 
@@ -377,13 +390,13 @@ class ExpressionPage extends Component {
 
     renderEditMenu = () => (
         <Popover
-            classes={{ paper: this.props.classes.popover }}
+            classes={{ paper: `${this.props.classes.popover} ${this.props.classes.editMenu}` }}
             anchorEl={this.state.menu.anchorEl}
             getContentAnchorEl={() => findDOMNode(this.editInput)}
             open={this.state.mode === modes.edit || this.state.mode === modes.add}
             onClose={() => this.saveEditMenuResult()}>
             {this.renderEditInput()}
-            {this.renderEditMenuItems()}
+            {this.state.editInfoOpen ? this.renderEditInfo() : this.renderEditMenuItems()}
         </Popover>
     );
 
@@ -427,15 +440,18 @@ class ExpressionPage extends Component {
     };
 
     renderEditInput = () => (
-        <AutoSelectInput
-            className={this.props.classes.editInput}
-            value={this.state.editValue}
-            onChange={this.handleEditInputChange}
-            onKeyDown={this.handleEditInputKeyDown}
-            inputProps={{ autoCapitalize: "off" }}
-            ref={node => {
-                this.editInput = node;
-            }} />
+        <div className={this.props.classes.editInput}>
+            <AutoSelectInput
+                fullWidth
+                value={this.state.editValue}
+                onChange={this.handleEditInputChange}
+                onKeyDown={this.handleEditInputKeyDown}
+                inputProps={{ autoCapitalize: "off" }}
+                endAdornment={this.renderEditInputAdornment()}
+                ref={node => {
+                    this.editInput = node;
+                }} />
+        </div>
     );
 
     handleEditInputChange = event => {
@@ -450,6 +466,29 @@ class ExpressionPage extends Component {
             this.saveEditMenuResult();
         }
     };
+
+    renderEditInputAdornment = () => (
+        <InputAdornment position="end">
+            <IconButton onClick={this.toggleEditInfo} onMouseDown={preventDefault}>
+                {this.state.editInfoOpen ? <InfoIcon /> : <InfoOutlineIcon />}
+            </IconButton>
+        </InputAdornment>
+    );
+
+    toggleEditInfo = () => {
+        this.setState(state => ({
+            editInfoOpen: !state.editInfoOpen
+        }));
+    };
+
+    renderEditInfo = () => (
+        <div className={this.props.classes.editInfo}>
+            <Typography variant="subheading" gutterBottom>Valid inputs</Typography>
+            <Typography gutterBottom>Numbers: just enter the number</Typography>
+            <Typography gutterBottom>References: select from the autocomplete list</Typography>
+            <Typography gutterBottom>Function signatures: start with ".", then enter the parameter name</Typography>
+        </div>
+    );
 
     renderEditMenuItems = () => this.getEditMenuItems().map(this.renderEditMenuItem);
 
