@@ -398,7 +398,7 @@ class ExpressionPage extends Component {
             anchorEl={this.state.menu.anchorEl}
             getContentAnchorEl={() => findDOMNode(this.editInput)}
             open={this.state.mode === modes.edit || this.state.mode === modes.add}
-            onClose={() => this.saveEditMenuResult()}>
+            onClose={this.closeMenu}>
             {this.renderEditInput()}
             {this.state.editInfoOpen ? this.renderEditInfo() : this.renderEditMenuItems()}
         </Popover>
