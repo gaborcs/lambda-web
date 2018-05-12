@@ -235,6 +235,8 @@ class ExpressionPage extends Component {
 
     getNodeLabel = node => {
         switch (node.type) {
+            case 'number':
+                return node.value.toString();
             case 'expression':
                 return this.props.expressions[node.value].name;
             case 'function':
