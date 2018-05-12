@@ -272,22 +272,24 @@ class ExpressionPage extends Component {
             classes={{ paper: this.props.classes.renamer }}
             anchorEl={this.state.renamer.anchorEl}
             open={this.state.renamer.open}
-            onClose={this.saveRenameResult}
+            onClose={this.closeRenamer}
             marginThreshold={0}>
             {this.renderRenamerTextField()}
         </Popover>
     );
 
+    closeRenamer = () => {
+        this.setState(state => ({
+            renamer: { ...state.renamer, open: false }
+        }));
+    };
+
     saveRenameResult = () => {
-        this.setState(state => {
-            this.props.setExpression({
-                name: state.renamer.value,
-                treeDataHistory: this.props.expression.treeDataHistory
-            });
-            return {
-                renamer: { ...state.renamer, open: false }
-            };
+        this.props.setExpression({
+            name: this.state.renamer.value,
+            treeDataHistory: this.props.expression.treeDataHistory
         });
+        this.closeRenamer();
     };
 
     renderRenamerTextField = () => (
