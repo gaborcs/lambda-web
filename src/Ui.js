@@ -1,10 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import { Switch, Route, Link, withRouter } from 'react-router-dom';
-import { MuiThemeProvider, createMuiTheme, withStyles } from 'material-ui/styles';
-import CssBaseline from 'material-ui/CssBaseline';
-import Button from 'material-ui/Button';
-import Typography from 'material-ui/Typography';
-import List, { ListItem, ListItemText } from 'material-ui/List';
+import { MuiThemeProvider, createMuiTheme, withStyles } from '@material-ui/core/styles';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Button from '@material-ui/core/Button';
+import Typography from '@material-ui/core/Typography';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
 import AddIcon from '@material-ui/icons/Add';
 import LambdaAppBar from './LambdaAppBar';
 import ExpressionPage from './ExpressionPage';
