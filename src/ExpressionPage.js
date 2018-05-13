@@ -79,7 +79,8 @@ const styles = theme => ({
         padding: '8px 0'
     },
     editMenu: {
-        width: 450
+        width: 450,
+        maxHeight: 'calc(100% - 80px)' // leave space to click outside to dismiss
     },
     editInput: {
         margin: '8px 16px'
