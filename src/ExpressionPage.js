@@ -65,6 +65,9 @@ const styles = theme => ({
     chip: {
         minWidth: minTouchTargetSize
     },
+    placeholderChip: {
+        color: theme.palette.error.light
+    },
     lineChildren: {
         position: 'absolute',
         width: 1,
@@ -226,7 +229,8 @@ class ExpressionPage extends Component {
 
     renderChip = ({ node, path, treeIndex, connectDragSource }) => {
         let classes = {
-            root: this.props.classes.chip
+            root: this.props.classes.chip,
+            label: node.type === 'placeholder' ? this.props.classes.placeholderChip : null
         };
         let label = this.getNodeLabel(node);
         let handleClick = event => this.openMenu(node, path, treeIndex, event.currentTarget);
