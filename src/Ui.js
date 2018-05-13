@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { Route, Link, withRouter } from 'react-router-dom';
+import React, { Component, Fragment } from 'react';
+import { Switch, Route, Link, withRouter } from 'react-router-dom';
 import { MuiThemeProvider, createMuiTheme, withStyles } from 'material-ui/styles';
 import CssBaseline from 'material-ui/CssBaseline';
 import Button from 'material-ui/Button';
@@ -29,7 +29,7 @@ const styles = {
         right: 16,
         bottom: 16
     },
-    primitiveDescription: {
+    pageDescription: {
         padding: 24
     }
 };
@@ -45,10 +45,13 @@ class Ui extends Component {
     render = () => (
         <MuiThemeProvider theme={theme}>
             <CssBaseline />
-            <Route exact path="/" render={this.renderHomeScreen} />
-            <Route exact path="/special-forms/:name" render={this.renderSpecialForm} />
-            <Route exact path="/primitive-functions/:name" render={this.renderPrimitiveFunction} />
-            <Route exact path="/expressions/:index" render={this.renderExpressionPage} />
+            <Switch>
+                <Route exact path="/" render={this.renderHomeScreen} />
+                <Route exact path="/special-forms/:name" render={this.renderSpecialFormIfFound} />
+                <Route exact path="/primitive-functions/:name" render={this.renderPrimitiveFunctionIfFound} />
+                <Route exact path="/expressions/:index" render={this.renderExpressionPageIfFound} />
+                <Route render={this.renderPageNotFound} />
+            </Switch>
         </MuiThemeProvider>
     );
 
@@ -92,42 +95,55 @@ class Ui extends Component {
         this.props.history.push(newExpressionPath);
     };
 
-    renderSpecialForm = ({ match }) => {
+    renderSpecialFormIfFound = ({ match }) => {
         let name = decodeURIComponent(match.params.name);
-        return this.renderPrimitiveWithDescription(name, specialForms[name].description);
+        let specialForm = specialForms[name];
+        return specialForm ?
+            this.renderPageWithTitleAndDescription(name, specialForm.description) :
+            this.renderPageWithOnlyTitle('Special form not found');
     };
 
-    renderPrimitiveFunction = ({ match }) => {
+    renderPrimitiveFunctionIfFound = ({ match }) => {
         let name = decodeURIComponent(match.params.name);
-        return this.renderPrimitiveWithDescription(name, primitiveFunctions[name].description);
+        let fn = primitiveFunctions[name];
+        return fn ?
+            this.renderPageWithTitleAndDescription(name, fn.description) :
+            this.renderPageWithOnlyTitle('Primitive function not found');
     };
 
-    renderPrimitiveWithDescription = (name, description) => (
-        <div className={this.props.classes.layoutContainer}>
-            <LambdaAppBar><Typography variant="title">{name}</Typography></LambdaAppBar>
-            {this.renderPrimitiveDescription(description)}
-        </div>
-    );
-
-    renderPrimitiveDescription = description => (
-        <Typography className={this.props.classes.primitiveDescription}>{description}</Typography>
-    );
-
-    renderExpressionPage = ({ match }) => {
+    renderExpressionPageIfFound = ({ match }) => {
         let expressionIndex = match.params.index;
-        return (
-            <ExpressionPage
-                expressions={this.state.expressions}
-                expression={this.state.expressions[expressionIndex]}
-                setExpression={this.setExpression.bind(this, expressionIndex)} />
-        );
+        let expression = this.state.expressions[expressionIndex];
+        return expression ?
+            this.renderExpressionPage(expression, expressionIndex) :
+            this.renderPageWithOnlyTitle('Expression not found');
     };
+
+    renderExpressionPage = (expression, index) => (
+        <ExpressionPage
+            expressions={this.state.expressions}
+            expression={expression}
+            setExpression={this.setExpression.bind(this, index)} />
+    );
 
     setExpression = (index, value) => {
         this.setState(state => ({
             expressions: Object.assign([], state.expressions, { [index]: value })
         }));
     };
+
+    renderPageNotFound = () => this.renderPageWithOnlyTitle('Page not found');
+
+    renderPageWithTitleAndDescription = (title, description) => (
+        <Fragment>
+            <LambdaAppBar>
+                <Typography variant="title">{title}</Typography>
+            </LambdaAppBar>
+            <Typography className={this.props.classes.pageDescription}>{description}</Typography>
+        </Fragment>
+    );
+
+    renderPageWithOnlyTitle = title => this.renderPageWithTitleAndDescription(title, '');
 }
 
 export default withStyles(styles)(withRouter(Ui));
