@@ -30,71 +30,84 @@ const chipHeight = 32;
 const minTouchTargetSize = 48;
 const lambdaChar = '\u03BB';
 
-const styles = theme => ({
-    root: {
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        userSelect: 'none'
-    },
-    name: {
-        padding: 8,
-        marginLeft: -8,
-        overflow: 'hidden'
-    },
-    appBarButtons: {
-        flex: '0 0 auto'
-    },
-    renamer: {
-        padding: 8
-    },
-    scrollingComponent: {
-        flex: 1,
-        padding: '8px 0',
-        overflow: 'auto'
-    },
-    nodeContent: {
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center'
-    },
-    dragSource: {
-        padding: 8,
-        margin: -8
-    },
-    chip: {
-        minWidth: minTouchTargetSize
-    },
-    placeholderChip: {
-        color: theme.palette.error.light
-    },
-    lineChildren: {
-        position: 'absolute',
-        width: 1,
-        left: minTouchTargetSize / 2,
-        bottom: 0,
-        height: (minTouchTargetSize - chipHeight) / 2
-    },
-    pickedUp: {
-        boxShadow: theme.shadows[8]
-    },
-    bottomBar: {
-        backgroundColor: theme.palette.grey[900]
-    },
-    popover: {
-        padding: '8px 0'
-    },
-    editMenu: {
-        width: 450,
-        maxHeight: 'calc(100% - 80px)' // leave space to click outside to dismiss
-    },
-    editInput: {
-        margin: '8px 16px'
-    },
-    editInfo: {
-        padding: '8px 16px 0'
-    }
-});
+const styles = theme => {
+    let lineColor = theme.palette.grey[700];
+    let lineColorBackground = { backgroundColor: lineColor };
+    return {
+        '@global': {
+            '.rst__lineHalfHorizontalRight::before': lineColorBackground,
+            '.rst__lineFullVertical::after': lineColorBackground,
+            '.rst__lineHalfVerticalTop::after': lineColorBackground,
+            '.rst__lineHalfVerticalBottom::after': lineColorBackground
+        },
+        root: {
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            userSelect: 'none'
+        },
+        name: {
+            padding: 8,
+            marginLeft: -8,
+            overflow: 'hidden'
+        },
+        appBarButtons: {
+            flex: '0 0 auto'
+        },
+        renamer: {
+            padding: 8
+        },
+        scrollingComponent: {
+            flex: 1,
+            padding: '8px 0',
+            overflow: 'auto'
+        },
+        nodeContent: {
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center'
+        },
+        dragSource: {
+            padding: 8,
+            margin: -8
+        },
+        chip: {
+            minWidth: minTouchTargetSize,
+            backgroundColor: 'transparent',
+            border: '1px solid ' + lineColor
+        },
+        placeholderChip: {
+            color: theme.palette.error.light
+        },
+        lineChildren: {
+            position: 'absolute',
+            width: 1,
+            left: minTouchTargetSize / 2,
+            bottom: 0,
+            height: (minTouchTargetSize - chipHeight) / 2,
+            backgroundColor: lineColor
+        },
+        pickedUp: {
+            boxShadow: theme.shadows[8]
+        },
+        bottomBar: {
+            backgroundColor: theme.palette.grey[900]
+        },
+        popover: {
+            padding: '8px 0'
+        },
+        editMenu: {
+            width: 450,
+            maxHeight: 'calc(100% - 80px)' // leave space to click outside to dismiss
+        },
+        editInput: {
+            margin: '8px 16px'
+        },
+        editInfo: {
+            padding: '8px 16px 0'
+        }
+    };
+};
 
 const initialTreeData = [{ type: 'placeholder', value: '' }];
 
@@ -263,7 +276,7 @@ class ExpressionPage extends Component {
 
     hasChildren = node => node.children && node.children.length;
 
-    renderLineChildren = () => <div className={'custom-line-color ' + this.props.classes.lineChildren} />;
+    renderLineChildren = () => <div className={this.props.classes.lineChildren} />;
 
     renderPreview = () => <Preview generator={this.generatePreview} />;
 

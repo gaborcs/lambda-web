@@ -1,11 +1,3 @@
 html, body, #root {
     height: 100%;
 }
-
-.rst__lineHalfHorizontalRight::before,
-.rst__lineFullVertical::after,
-.rst__lineHalfVerticalTop::after,
-.rst__lineHalfVerticalBottom::after,
-.custom-line-color {
-    background: #757575;
-}
