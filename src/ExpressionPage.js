@@ -5,6 +5,11 @@ import { Preview } from 'react-dnd-multi-backend';
 import withScrolling from 'react-dnd-scrollzone';
 import { SortableTreeWithoutDndContext as SortableTree, changeNodeAtPath, removeNodeAtPath, addNodeUnderParent, getFlatDataFromTree } from 'react-sortable-tree';
 import { withStyles } from '@material-ui/core/styles';
+import red from '@material-ui/core/colors/red';
+import indigo from '@material-ui/core/colors/indigo';
+import lightBlue from '@material-ui/core/colors/lightBlue';
+import green from '@material-ui/core/colors/green';
+import grey from '@material-ui/core/colors/grey';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -73,11 +78,24 @@ const styles = theme => {
         },
         chip: {
             minWidth: minTouchTargetSize,
+            fontSize: 14,
             backgroundColor: 'transparent',
             border: '1px solid ' + lineColor
         },
+        functionChip: {
+            color: indigo[200]
+        },
+        variableChip: {
+            color: lightBlue[200]
+        },
+        referenceChip: {
+            color: grey[300]
+        },
+        numberChip: {
+            color: green[200]
+        },
         placeholderChip: {
-            color: theme.palette.error.light
+            color: red[200]
         },
         lineChildren: {
             position: 'absolute',
@@ -243,7 +261,7 @@ class ExpressionPage extends Component {
     renderChip = ({ node, path, treeIndex, connectDragSource }) => {
         let classes = {
             root: this.props.classes.chip,
-            label: node.type === 'placeholder' ? this.props.classes.placeholderChip : null
+            label: this.getChipLabelClass(node.type)
         };
         let label = this.getNodeLabel(node);
         let handleClick = event => this.openMenu(node, path, treeIndex, event.currentTarget);
@@ -252,6 +270,21 @@ class ExpressionPage extends Component {
         return connectDragSource(
             <a className={this.props.classes.dragSource} onContextMenu={preventDefault}>{chip}</a>
         );
+    };
+
+    getChipLabelClass = type => {
+        switch (type) {
+            case 'function':
+                return this.props.classes.functionChip;
+            case 'variable':
+                return this.props.classes.variableChip;
+            case 'number':
+                return this.props.classes.numberChip;
+            case 'placeholder':
+                return this.props.classes.placeholderChip;
+            default:
+                return this.props.classes.referenceChip;
+        }
     };
 
     getNodeLabel = node => {
