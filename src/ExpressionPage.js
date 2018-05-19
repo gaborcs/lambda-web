@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { findDOMNode } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { Preview } from 'react-dnd-multi-backend';
 import withScrolling from 'react-dnd-scrollzone';
@@ -19,13 +18,11 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Popover from '@material-ui/core/Popover';
 import FormControl from '@material-ui/core/FormControl';
-import Input from '@material-ui/core/Input';
 import InputLabel from '@material-ui/core/InputLabel';
-import InputAdornment from '@material-ui/core/InputAdornment';
 import UndoIcon from '@material-ui/icons/Undo';
 import RedoIcon from '@material-ui/icons/Redo';
-import InfoIcon from '@material-ui/icons/Info';
-import InfoOutlineIcon from '@material-ui/icons/InfoOutline';
+import AutoSelectInput from './AutoSelectInput';
+import Editor from './Editor';
 import LambdaAppBar from './LambdaAppBar';
 import evaluator from './evaluator';
 import primitiveFunctions from './primitiveFunctions';
@@ -117,12 +114,6 @@ const styles = theme => {
         editMenu: {
             width: 450,
             maxHeight: 'calc(100% - 80px)' // leave space to click outside to dismiss
-        },
-        editInput: {
-            margin: '8px 16px'
-        },
-        editInfo: {
-            padding: '8px 16px 0'
         }
     };
 };
@@ -142,8 +133,6 @@ class ExpressionPage extends Component {
         renamer: { open: false },
         mode: modes.default,
         menu: {},
-        editValue: '',
-        editInfoOpen: false,
         variables: [] // stored as state to avoid changing them before the menu animation finishes
     };
 
@@ -412,7 +401,6 @@ class ExpressionPage extends Component {
     initiateEdit = () => {
         this.setState(state => ({
             mode: modes.edit,
-            editValue: this.getNodeLabel(state.menu.node),
             variables: this.getVariables()
         }));
     };
@@ -441,7 +429,6 @@ class ExpressionPage extends Component {
     initiateAdd = () => {
         this.setState({
             mode: modes.add,
-            editValue: '',
             variables: this.getVariables()
         });
     };
@@ -450,29 +437,34 @@ class ExpressionPage extends Component {
         <Popover
             classes={{ paper: `${this.props.classes.popover} ${this.props.classes.editMenu}` }}
             anchorEl={this.state.menu.anchorEl}
-            getContentAnchorEl={() => findDOMNode(this.editInput)}
+            anchorOrigin={{ vertical: -16 }}
             open={this.state.mode === modes.edit || this.state.mode === modes.add}
             onClose={this.closeMenu}>
-            {this.renderEditInput()}
-            {this.state.editInfoOpen ? this.renderEditInfo() : this.renderEditMenuItems()}
+            {this.renderEditor()}
         </Popover>
     );
 
-    saveEditMenuResult = (type, value) => {
-        let { mode, menu, editValue } = this.state;
+    renderEditor = () => (
+        <Editor
+            initialInput={this.getInitialEditorInput()}
+            items={this.getAllPossibleEditorItems()}
+            saveResult={this.saveEditorResult} />
+    );
+
+    getInitialEditorInput = () => this.state.mode === 'edit' ? this.getNodeLabel(this.state.menu.node) : '';
+
+    getAllPossibleEditorItems = () => [
+        ...this.state.variables.map(variable => ({ name: variable, type: 'variable', value: variable })),
+        ...Object.entries(specialForms).map(([name, info]) => ({ name, type: 'special', value: name })),
+        ...Object.entries(primitiveFunctions).map(([name, info]) => ({ name, type: 'primitive', value: name })),
+        ...this.props.expressions
+                .map((expression, index) => ({ name: expression.name, type: 'expression', value: index }))
+                .filter(item => item.name)
+    ];
+
+    saveEditorResult = (type, value) => {
+        let { mode, menu } = this.state;
         let { treeDataHistory } = this.props.expression;
-        if (!type) {
-            if (editValue.startsWith(lambdaChar)) {
-                type = 'function';
-                value = editValue.substr(1);
-            } else if (isNaN(editValue)) {
-                type = 'placeholder';
-                value = editValue;
-            } else {
-                type = 'number';
-                value = +editValue;
-            }
-        }
         if (mode === 'edit') {
             let valueChanged = type !== menu.node.type || value !== menu.node.value;
             if (valueChanged) {
@@ -496,78 +488,6 @@ class ExpressionPage extends Component {
         }
         this.closeMenu();
     };
-
-    renderEditInput = () => (
-        <div className={this.props.classes.editInput}>
-            <AutoSelectInput
-                fullWidth
-                value={this.state.editValue}
-                onChange={this.handleEditInputChange}
-                onKeyDown={this.handleEditInputKeyDown}
-                inputProps={{ autoCapitalize: "off" }}
-                endAdornment={this.renderEditInputAdornment()}
-                ref={node => {
-                    this.editInput = node;
-                }} />
-        </div>
-    );
-
-    handleEditInputChange = event => {
-        let { value } = event.target;
-        this.setState({
-            editValue: value === '.' ? lambdaChar : value
-        });
-    };
-
-    handleEditInputKeyDown = event => {
-        if (event.key === 'Enter') {
-            this.saveEditMenuResult();
-        }
-    };
-
-    renderEditInputAdornment = () => (
-        <InputAdornment position="end">
-            <IconButton onClick={this.toggleEditInfo} onMouseDown={preventDefault}>
-                {this.state.editInfoOpen ? <InfoIcon /> : <InfoOutlineIcon />}
-            </IconButton>
-        </InputAdornment>
-    );
-
-    toggleEditInfo = () => {
-        this.setState(state => ({
-            editInfoOpen: !state.editInfoOpen
-        }));
-    };
-
-    renderEditInfo = () => (
-        <div className={this.props.classes.editInfo}>
-            <Typography variant="subheading" gutterBottom>Valid inputs</Typography>
-            <Typography gutterBottom>Numbers: just enter the number</Typography>
-            <Typography gutterBottom>References: select from the autocomplete list</Typography>
-            <Typography gutterBottom>Function signatures: start with ".", then enter the parameter name</Typography>
-        </div>
-    );
-
-    renderEditMenuItems = () => this.getEditMenuItems().map(this.renderEditMenuItem);
-
-    getEditMenuItems = () => this.getAllPossibleEditMenuItems().filter(this.matchesSearch);
-
-    getAllPossibleEditMenuItems = () => [
-        ...this.state.variables.map(variable => ({ name: variable, type: 'variable', value: variable })),
-        ...Object.entries(specialForms).map(([name, info]) => ({ name, type: 'special', value: name })),
-        ...Object.entries(primitiveFunctions).map(([name, info]) => ({ name, type: 'primitive', value: name })),
-        ...this.props.expressions
-                .map((expression, index) => ({ name: expression.name, type: 'expression', value: index }))
-                .filter(item => item.name)
-    ];
-
-    matchesSearch = item => item.name.startsWith(this.state.editValue);
-
-    renderEditMenuItem = (item, index) => (
-        <MenuItem key={index} onClick={this.saveEditMenuResult.bind(this, item.type, item.value)}>
-            {item.name}
-        </MenuItem>
-    );
 
     closeMenu = () => {
         this.setState({ mode: modes.default });
@@ -605,22 +525,6 @@ class ExpressionPage extends Component {
             }
         };
     }
-}
-
-class AutoSelectInput extends React.Component {
-    componentDidMount() {
-        let element = findDOMNode(this.node);
-        element.focus();
-        element.select();
-    }
-
-    render = () => (
-        <Input
-            {...this.props}
-            inputRef={node => {
-                this.node = node;
-            }} />
-    );
 }
 
 export default withStyles(styles)(ExpressionPage);
