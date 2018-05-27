@@ -22,7 +22,7 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import UndoIcon from '@material-ui/icons/Undo';
 import RedoIcon from '@material-ui/icons/Redo';
 import AutoSelectInput from './AutoSelectInput';
-import Editor from './Editor';
+import NodeEditor from './NodeEditor';
 import Toolbar from './Toolbar';
 import evaluator from './evaluator';
 import primitiveFunctions from './primitiveFunctions';
@@ -456,7 +456,7 @@ class ExpressionPage extends Component {
     );
 
     renderEditor = () => (
-        <Editor
+        <NodeEditor
             initialInput={this.getInitialEditorInput()}
             items={this.getAllPossibleEditorItems()}
             saveResult={this.saveEditorResult} />

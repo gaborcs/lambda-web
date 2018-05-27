@@ -19,7 +19,7 @@ const styles = {
     }
 };
 
-class Editor extends Component {
+class NodeEditor extends Component {
     state = {
         input: this.props.initialInput,
         infoOpen: false,
@@ -132,4 +132,4 @@ class Editor extends Component {
     );
 }
 
-export default withStyles(styles)(Editor);
+export default withStyles(styles)(NodeEditor);
