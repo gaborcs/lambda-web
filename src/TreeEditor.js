@@ -15,6 +15,7 @@ import Popover from '@material-ui/core/Popover';
 import NodeEditor from './NodeEditor';
 import primitiveFunctions from './primitiveFunctions';
 import specialForms from './specialForms';
+import { getNodePath } from './urlUtils';
 
 const chipHeight = 32;
 const minTouchTargetSize = 48;
@@ -204,19 +205,7 @@ class TreeEditor extends Component {
 
     getLinkPathToMenuNode = () => {
         let { node } = this.state.menu;
-        if (!node) {
-            return null;
-        }
-        switch (node.type) {
-            case 'special':
-                return '/special-forms/' + encodeURIComponent(node.value);
-            case 'primitive':
-                return '/primitive-functions/' + encodeURIComponent(node.value);
-            case 'expression':
-                return '/expressions/' + node.value;
-            default:
-                return null;
-        }
+        return node ? getNodePath(node.type, node.value) : null;
     };
 
     initiateEdit = () => {

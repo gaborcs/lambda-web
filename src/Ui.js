@@ -15,6 +15,7 @@ import Toolbar from './Toolbar';
 import ExpressionPage from './ExpressionPage';
 import specialForms from './specialForms';
 import primitiveFunctions from './primitiveFunctions';
+import { getSpecialFormPath, getPrimitiveFunctionPath, getExpressionPath } from './urlUtils';
 import initialExpressions from './initialExpressions.json';
 
 const theme = createMuiTheme({
@@ -69,12 +70,10 @@ class Ui extends Component {
     renderExpressionsPage = () => {
         let items = this.state.expressions.map((expression, index) => ({
             name: expression.name || 'unnamed',
-            path: this.getExpressionPath(index)
+            path: getExpressionPath(index)
         }));
         return this.renderListPage('Expressions', items, this.renderAddNewExpressionButton());
     }
-
-    getExpressionPath = index => `/expressions/${index}`;
 
     renderListPage = (title, items, fab) => (
         <div className={this.props.classes.layoutContainer}>
@@ -117,7 +116,7 @@ class Ui extends Component {
 
     redirectToNewExpression = () => {
         let newExpressionIndex = this.state.expressions.length - 1;
-        let newExpressionPath = this.getExpressionPath(newExpressionIndex);
+        let newExpressionPath = getExpressionPath(newExpressionIndex);
         this.props.history.push(newExpressionPath);
     };
 
@@ -146,7 +145,7 @@ class Ui extends Component {
 
     renderSpecialFormsPage = () => {
         let specialFormNames = Object.keys(specialForms);
-        let items = specialFormNames.map(name => ({ name, path: `/special-forms/${encodeURIComponent(name)}` }));
+        let items = specialFormNames.map(name => ({ name, path: getSpecialFormPath(name) }));
         return this.renderListPage('Special forms', items);
     };
 
@@ -170,7 +169,7 @@ class Ui extends Component {
 
     renderPrimitiveFunctionsPage = () => {
         let primitiveFunctionNames = Object.keys(primitiveFunctions);
-        let items = primitiveFunctionNames.map(name => ({ name, path: `/primitive-functions/${encodeURIComponent(name)}` }));
+        let items = primitiveFunctionNames.map(name => ({ name, path: getPrimitiveFunctionPath(name) }));
         return this.renderListPage('Primitive functions', items);
     };
 
