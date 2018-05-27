@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { Switch, Route, Link, withRouter } from 'react-router-dom';
+import { Switch, Redirect, Route, Link, withRouter } from 'react-router-dom';
 import { MuiThemeProvider, createMuiTheme, withStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Button from '@material-ui/core/Button';
@@ -7,8 +7,11 @@ import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import IconButton from '@material-ui/core/IconButton';
 import AddIcon from '@material-ui/icons/Add';
-import LambdaAppBar from './LambdaAppBar';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import MenuIcon from '@material-ui/icons/Menu';
+import Toolbar from './Toolbar';
 import ExpressionPage from './ExpressionPage';
 import specialForms from './specialForms';
 import primitiveFunctions from './primitiveFunctions';
@@ -25,6 +28,9 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         height: '100%'
+    },
+    title: {
+        marginLeft: 20
     },
     addButton: {
         position: 'absolute',
@@ -48,36 +54,54 @@ class Ui extends Component {
         <MuiThemeProvider theme={theme}>
             <CssBaseline />
             <Switch>
-                <Route exact path="/" render={this.renderHomeScreen} />
-                <Route exact path="/special-forms/:name" render={this.renderSpecialFormIfFound} />
-                <Route exact path="/primitive-functions/:name" render={this.renderPrimitiveFunctionIfFound} />
+                <Redirect exact from="/" to="/expressions" />
+                <Route exact path="/expressions" render={this.renderExpressionsPage} />
                 <Route exact path="/expressions/:index" render={this.renderExpressionPageIfFound} />
+                <Route exact path="/special-forms" render={this.renderSpecialFormsPage} />
+                <Route exact path="/special-forms/:name" render={this.renderSpecialFormPageIfFound} />
+                <Route exact path="/primitive-functions" render={this.renderPrimitiveFunctionsPage} />
+                <Route exact path="/primitive-functions/:name" render={this.renderPrimitiveFunctionPageIfFound} />
                 <Route render={this.renderPageNotFound} />
             </Switch>
         </MuiThemeProvider>
     );
 
-    renderHomeScreen = () => (
+    renderExpressionsPage = () => {
+        let items = this.state.expressions.map((expression, index) => ({
+            name: expression.name || 'unnamed',
+            path: this.getExpressionPath(index)
+        }));
+        return this.renderListPage('Expressions', items, this.renderAddNewExpressionButton());
+    }
+
+    getExpressionPath = index => `/expressions/${index}`;
+
+    renderListPage = (title, items, fab) => (
         <div className={this.props.classes.layoutContainer}>
-            <LambdaAppBar><Typography variant="title">Expressions</Typography></LambdaAppBar>
-            {this.renderExpressions()}
-            {this.renderAddNewExpressionButton()}
+            {this.renderAppBarWithMenuButton(title)}
+            {this.renderList(items)}
+            {fab}
         </div>
     );
 
-    renderExpressions = () => (
-        <List>
-            {this.state.expressions.map(this.renderExpression)}
-        </List>
+    renderAppBarWithMenuButton = title => this.renderAppBar(this.renderMenuButton(), title);
+
+    renderAppBar = (navButton, title) => (
+        <Toolbar>
+            {navButton}
+            <Typography variant="title" className={this.props.classes.title}>{title}</Typography>
+        </Toolbar>
     );
 
-    renderExpression = (expression, index) => (
-        <ListItem key={index} button component={Link} to={this.getExpressionPath(index)}>
-            <ListItemText primary={expression.name || 'unnamed'} />
+    renderMenuButton = () => <IconButton><MenuIcon /></IconButton>;
+
+    renderList = items => <List>{items.map(this.renderListItem)}</List>;
+
+    renderListItem = (item, index) => (
+        <ListItem key={index} button component={Link} to={item.path}>
+            <ListItemText primary={item.name} />
         </ListItem>
     );
-
-    getExpressionPath = index => `/expressions/${index}`;
 
     renderAddNewExpressionButton = () => (
         <Button variant="fab" color="primary" className={this.props.classes.addButton} onClick={this.addNewExpression}>
@@ -97,28 +121,12 @@ class Ui extends Component {
         this.props.history.push(newExpressionPath);
     };
 
-    renderSpecialFormIfFound = ({ match }) => {
-        let name = decodeURIComponent(match.params.name);
-        let specialForm = specialForms[name];
-        return specialForm ?
-            this.renderPageWithTitleAndDescription(name, specialForm.description) :
-            this.renderPageWithOnlyTitle('Special form not found');
-    };
-
-    renderPrimitiveFunctionIfFound = ({ match }) => {
-        let name = decodeURIComponent(match.params.name);
-        let fn = primitiveFunctions[name];
-        return fn ?
-            this.renderPageWithTitleAndDescription(name, fn.description) :
-            this.renderPageWithOnlyTitle('Primitive function not found');
-    };
-
     renderExpressionPageIfFound = ({ match }) => {
         let expressionIndex = match.params.index;
         let expression = this.state.expressions[expressionIndex];
-        return expression ?
-            this.renderExpressionPage(expression, expressionIndex) :
-            this.renderPageWithOnlyTitle('Expression not found');
+        return expression
+            ? this.renderExpressionPage(expression, expressionIndex)
+            : this.renderExpressionAppBar('Expression not found');
     };
 
     renderExpressionPage = (expression, index) => (
@@ -134,18 +142,60 @@ class Ui extends Component {
         }));
     };
 
-    renderPageNotFound = () => this.renderPageWithOnlyTitle('Page not found');
+    renderExpressionAppBar = title => this.renderAppBarWithUpButton('/expressions', title);
 
-    renderPageWithTitleAndDescription = (title, description) => (
+    renderSpecialFormsPage = () => {
+        let specialFormNames = Object.keys(specialForms);
+        let items = specialFormNames.map(name => ({ name, path: `/special-forms/${encodeURIComponent(name)}` }));
+        return this.renderListPage('Special forms', items);
+    };
+
+    renderSpecialFormPageIfFound = ({ match }) => {
+        let name = decodeURIComponent(match.params.name);
+        let specialForm = specialForms[name];
+        return specialForm
+            ? this.renderSpecialFormPage(name, specialForm.description)
+            : this.renderSpecialFormAppBar('Special form not found');
+    };
+
+    renderSpecialFormPage = (name, description) => {
+        return this.renderDescriptionPage(this.renderSpecialFormAppBar(name), description);
+    };
+
+    renderSpecialFormAppBar = title => this.renderAppBarWithUpButton('/special-forms', title);
+
+    renderAppBarWithUpButton = (upPath, title) => this.renderAppBar(this.renderUpButton(upPath), title);
+
+    renderUpButton = path => <IconButton component={Link} to={path}><ArrowBackIcon /></IconButton>;
+
+    renderPrimitiveFunctionsPage = () => {
+        let primitiveFunctionNames = Object.keys(primitiveFunctions);
+        let items = primitiveFunctionNames.map(name => ({ name, path: `/primitive-functions/${encodeURIComponent(name)}` }));
+        return this.renderListPage('Primitive functions', items);
+    };
+
+    renderPrimitiveFunctionPageIfFound = ({ match }) => {
+        let name = decodeURIComponent(match.params.name);
+        let fn = primitiveFunctions[name];
+        return fn
+            ? this.renderPrimitiveFunctionPage(name, fn.description)
+            : this.renderPrimitiveFunctionAppBar('Primitive function not found');
+    };
+
+    renderPrimitiveFunctionPage = (name, description) => {
+        return this.renderDescriptionPage(this.renderPrimitiveFunctionAppBar(name), description);
+    };
+
+    renderPrimitiveFunctionAppBar = title => this.renderAppBarWithUpButton('/primitive-functions', title);
+
+    renderPageNotFound = () => this.renderAppBarWithMenuButton('Page not found');
+
+    renderDescriptionPage = (appBar, description) => (
         <Fragment>
-            <LambdaAppBar>
-                <Typography variant="title">{title}</Typography>
-            </LambdaAppBar>
+            {appBar}
             <Typography className={this.props.classes.pageDescription}>{description}</Typography>
         </Fragment>
     );
-
-    renderPageWithOnlyTitle = title => this.renderPageWithTitleAndDescription(title, '');
 }
 
 export default withStyles(styles)(withRouter(Ui));

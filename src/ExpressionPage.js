@@ -13,17 +13,17 @@ import ButtonBase from '@material-ui/core/ButtonBase';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import Chip from '@material-ui/core/Chip';
-import Toolbar from '@material-ui/core/Toolbar';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Popover from '@material-ui/core/Popover';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import UndoIcon from '@material-ui/icons/Undo';
 import RedoIcon from '@material-ui/icons/Redo';
 import AutoSelectInput from './AutoSelectInput';
 import Editor from './Editor';
-import LambdaAppBar from './LambdaAppBar';
+import Toolbar from './Toolbar';
 import evaluator from './evaluator';
 import primitiveFunctions from './primitiveFunctions';
 import specialForms from './specialForms';
@@ -48,9 +48,13 @@ const styles = theme => {
             height: '100%',
             userSelect: 'none'
         },
+        appBarLeft: {
+            flex: '1 1 auto',
+            minWidth: 0,
+            display: 'flex'
+        },
         name: {
-            padding: 8,
-            marginLeft: -8,
+            padding: '8px 20px',
             overflow: 'hidden'
         },
         appBarButtons: {
@@ -106,14 +110,14 @@ const styles = theme => {
             boxShadow: theme.shadows[8]
         },
         bottomBar: {
-            backgroundColor: theme.palette.grey[900]
+            padding: '0 16px'
         },
         popover: {
             padding: '8px 0'
         },
         editMenu: {
             width: 450,
-            maxHeight: 'calc(100% - 80px)' // leave space to click outside to dismiss
+            maxHeight: 'calc(100% - 72px)' // leave space to click outside to dismiss
         }
     };
 };
@@ -183,10 +187,17 @@ class ExpressionPage extends Component {
     );
 
     renderAppBar = () => (
-        <LambdaAppBar>
+        <Toolbar>
+            {this.renderAppBarLeft()}
+            {this.renderAppBarRight()}
+        </Toolbar>
+    );
+
+    renderAppBarLeft = () => (
+        <div className={this.props.classes.appBarLeft}>
+            <IconButton component={Link} to="/expressions"><ArrowBackIcon /></IconButton>
             {this.renderName()}
-            {this.renderAppBarButtons()}
-        </LambdaAppBar>
+        </div>
     );
 
     renderName = () => (
@@ -201,7 +212,7 @@ class ExpressionPage extends Component {
         });
     };
 
-    renderAppBarButtons = () => (
+    renderAppBarRight = () => (
         <div className={this.props.classes.appBarButtons}>
             {this.renderUndoButton()}
             {this.renderRedoButton()}
