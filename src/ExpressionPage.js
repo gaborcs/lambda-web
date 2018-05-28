@@ -2,19 +2,15 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import withScrolling from 'react-dnd-scrollzone';
 import { withStyles } from '@material-ui/core/styles';
-import ButtonBase from '@material-ui/core/ButtonBase';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
-import Popover from '@material-ui/core/Popover';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import UndoIcon from '@material-ui/icons/Undo';
 import RedoIcon from '@material-ui/icons/Redo';
-import AutoSelectInput from './AutoSelectInput';
 import Toolbar from './Toolbar';
-import evaluator from './evaluator';
+import RenamableTitle from './RenamableTitle';
 import TreeEditor from './TreeEditor';
+import evaluator from './evaluator';
 
 const lambdaChar = '\u03BB';
 
@@ -30,15 +26,8 @@ const styles = ({
         minWidth: 0,
         display: 'flex'
     },
-    name: {
-        padding: '8px 20px',
-        overflow: 'hidden'
-    },
     appBarButtons: {
         flex: '0 0 auto'
-    },
-    renamer: {
-        padding: 8
     },
     scrollingComponent: {
         flex: 1,
@@ -53,9 +42,6 @@ const styles = ({
 const ScrollingComponent = withScrolling('div');
 
 class ExpressionPage extends Component {
-    state = {
-        renamer: { open: false }
-    };
 
     undo = () => {
         let { past, present, future } = this.props.expression.treeDataHistory;
@@ -96,7 +82,6 @@ class ExpressionPage extends Component {
             {this.renderAppBar()}
             {this.renderScrollingContent()}
             {this.renderBottomBar()}
-            {this.renderRenamer()}
         </div>
     );
 
@@ -110,19 +95,18 @@ class ExpressionPage extends Component {
     renderAppBarLeft = () => (
         <div className={this.props.classes.appBarLeft}>
             <IconButton component={Link} to="/expressions"><ArrowBackIcon /></IconButton>
-            {this.renderName()}
+            {this.renderRenamableTitle()}
         </div>
     );
 
-    renderName = () => (
-        <ButtonBase className={this.props.classes.name} title="Rename" onClick={this.openRenamer}>
-            <Typography variant="title" noWrap>{this.props.expression.name || "unnamed"}</Typography>
-        </ButtonBase>
+    renderRenamableTitle = () => (
+        <RenamableTitle name={this.props.expression.name} setName={this.setName} />
     );
 
-    openRenamer = event => {
-        this.setState({
-            renamer: { open: true, anchorEl: event.currentTarget, value: this.props.expression.name }
+    setName = name => {
+        this.props.setExpression({
+            name,
+            treeDataHistory: this.props.expression.treeDataHistory
         });
     };
 
@@ -157,56 +141,6 @@ class ExpressionPage extends Component {
             treeData={this.props.expression.treeDataHistory.present}
             setTreeData={this.addToHistory} />
     );
-
-    renderRenamer = () => (
-        <Popover
-            classes={{ paper: this.props.classes.renamer }}
-            anchorEl={this.state.renamer.anchorEl}
-            open={this.state.renamer.open}
-            onClose={this.closeRenamer}
-            marginThreshold={0}>
-            {this.renderRenamerTextField()}
-        </Popover>
-    );
-
-    closeRenamer = () => {
-        this.setState(state => ({
-            renamer: { ...state.renamer, open: false }
-        }));
-    };
-
-    saveRenameResult = () => {
-        this.props.setExpression({
-            name: this.state.renamer.value,
-            treeDataHistory: this.props.expression.treeDataHistory
-        });
-        this.closeRenamer();
-    };
-
-    renderRenamerTextField = () => (
-        <FormControl>
-            <InputLabel htmlFor="renamer-input">Rename</InputLabel>
-            <AutoSelectInput
-                id="renamer-input"
-                value={this.state.renamer.value}
-                onChange={this.handleRenamerInputChange}
-                onKeyDown={this.handleRenamerInputKeyDown}
-                inputProps={{ autoCapitalize: "off" }} />
-        </FormControl>
-    );
-
-    handleRenamerInputChange = event => {
-        let value = event.target.value;
-        this.setState(state => ({
-            renamer: { ...state.renamer, value }
-        }));
-    };
-
-    handleRenamerInputKeyDown = event => {
-        if (event.key === 'Enter') {
-            this.saveRenameResult();
-        }
-    };
 
     renderBottomBar = () => (
         <Toolbar className={this.props.classes.bottomBar}>
