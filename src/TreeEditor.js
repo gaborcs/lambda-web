@@ -32,6 +32,9 @@ const styles = theme => {
             '.rst__lineHalfVerticalTop::after': lineColorBackground,
             '.rst__lineHalfVerticalBottom::after': lineColorBackground
         },
+        tree: {
+            userSelect: 'none'
+        },
         nodeContent: {
             height: '100%',
             display: 'flex',
@@ -101,6 +104,7 @@ class TreeEditor extends Component {
 
     renderTree = () => (
         <SortableTree
+            className={this.props.classes.tree}
             treeData={this.props.treeData}
             onChange={this.props.setTreeData}
             rowHeight={minTouchTargetSize}

@@ -18,8 +18,7 @@ const styles = ({
     root: {
         display: 'flex',
         flexDirection: 'column',
-        height: '100%',
-        userSelect: 'none'
+        height: '100%'
     },
     appBarLeft: {
         flex: '1 1 auto',

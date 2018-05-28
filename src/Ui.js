@@ -26,11 +26,6 @@ const theme = createMuiTheme({
 });
 
 const styles = {
-    layoutContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%'
-    },
     title: {
         marginLeft: 20
     },
@@ -86,11 +81,11 @@ class Ui extends Component {
     }
 
     renderListPage = (title, items, fab) => (
-        <div className={this.props.classes.layoutContainer}>
+        <Fragment>
             {this.renderAppBarWithMenuButton(title)}
             {this.renderList(items)}
             {fab}
-        </div>
+        </Fragment>
     );
 
     renderAppBarWithMenuButton = title => this.renderAppBar(this.renderMenuButton(), title);
