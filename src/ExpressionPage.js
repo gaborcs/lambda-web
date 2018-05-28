@@ -163,17 +163,6 @@ class ExpressionPage extends Component {
     };
 
     getExpressionNode = expression => expression.treeDataHistory.present[0];
-
-    static createNewExpression() {
-        return {
-            name: "",
-            treeDataHistory: {
-                past: [],
-                present: TreeEditor.INITIAL_TREE_DATA,
-                future: []
-            }
-        };
-    }
 }
 
 export default withStyles(styles)(ExpressionPage);

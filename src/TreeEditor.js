@@ -15,6 +15,7 @@ import Popover from '@material-ui/core/Popover';
 import NodeEditor from './NodeEditor';
 import primitiveFunctions from './primitiveFunctions';
 import specialForms from './specialForms';
+import placeholderTreeData from './placeholderTreeData';
 import { getNodePath } from './urlUtils';
 
 const chipHeight = 32;
@@ -231,7 +232,7 @@ class TreeEditor extends Component {
             path: this.state.menu.path,
             getNodeKey: ({ treeIndex }) => treeIndex
         });
-        let newTreeData = resultTreeData.length === 0 ? TreeEditor.INITIAL_TREE_DATA : resultTreeData;
+        let newTreeData = resultTreeData.length === 0 ? placeholderTreeData : resultTreeData;
         this.props.setTreeData(newTreeData);
         this.closeMenu();
     };
@@ -302,8 +303,6 @@ class TreeEditor extends Component {
     closeMenu = () => {
         this.setState({ mode: modes.default });
     };
-
-    static INITIAL_TREE_DATA = [{ type: 'placeholder', value: '' }];
 }
 
 export default withStyles(styles)(TreeEditor);

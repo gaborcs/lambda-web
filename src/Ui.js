@@ -15,6 +15,7 @@ import Toolbar from './Toolbar';
 import ExpressionPage from './ExpressionPage';
 import specialForms from './specialForms';
 import primitiveFunctions from './primitiveFunctions';
+import placeholderTreeData from './placeholderTreeData';
 import { getSpecialFormPath, getPrimitiveFunctionPath, getExpressionPath } from './urlUtils';
 import initialExpressions from './initialExpressions.json';
 
@@ -40,6 +41,15 @@ const styles = {
     },
     pageDescription: {
         padding: 24
+    }
+};
+
+const newExpression = {
+    name: "",
+    treeDataHistory: {
+        past: [],
+        present: placeholderTreeData,
+        future: []
     }
 };
 
@@ -110,7 +120,7 @@ class Ui extends Component {
 
     addNewExpression = () => {
         this.setState(state => ({
-            expressions: [ ...state.expressions, ExpressionPage.createNewExpression() ]
+            expressions: [ ...state.expressions, newExpression ]
         }), this.redirectToNewExpression);
     };
 

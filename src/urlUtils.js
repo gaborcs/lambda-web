@@ -8,6 +8,9 @@ const pathProviders = {
     primitive: getPrimitiveFunctionPath
 }
 
-const getNodePath = (type, value) => pathProviders[type](value);
+const getNodePath = (type, value) => {
+    let getPath = pathProviders[type];
+    return getPath ? getPath(value) : null;
+}
 
 export { getSpecialFormPath, getPrimitiveFunctionPath, getExpressionPath, getNodePath };
