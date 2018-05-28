@@ -95,12 +95,8 @@ class ExpressionPage extends Component {
     renderAppBarLeft = () => (
         <div className={this.props.classes.appBarLeft}>
             <IconButton component={Link} to="/expressions"><ArrowBackIcon /></IconButton>
-            {this.renderRenamableTitle()}
+            <RenamableTitle name={this.props.expression.name} setName={this.setName} />
         </div>
-    );
-
-    renderRenamableTitle = () => (
-        <RenamableTitle name={this.props.expression.name} setName={this.setName} />
     );
 
     setName = name => {
