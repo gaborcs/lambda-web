@@ -11,7 +11,7 @@ import IconButton from '@material-ui/core/IconButton';
 import AddIcon from '@material-ui/icons/Add';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import MenuIcon from '@material-ui/icons/Menu';
-import Toolbar from './Toolbar';
+import Toolbar, { height as toolbarHeight } from './Toolbar';
 import ExpressionPage from './ExpressionPage';
 import specialForms from './specialForms';
 import primitiveFunctions from './primitiveFunctions';
@@ -30,9 +30,12 @@ const styles = {
         marginLeft: 20
     },
     addButton: {
-        position: 'absolute',
+        position: 'fixed',
         right: 16,
         bottom: 16
+    },
+    mainContent: {
+        paddingTop: toolbarHeight
     },
     pageDescription: {
         padding: 24
@@ -83,7 +86,7 @@ class Ui extends Component {
     renderListPage = (title, items, fab) => (
         <Fragment>
             {this.renderAppBarWithMenuButton(title)}
-            {this.renderList(items)}
+            {this.renderMainContent(this.renderList(items))}
             {fab}
         </Fragment>
     );
@@ -98,6 +101,8 @@ class Ui extends Component {
     );
 
     renderMenuButton = () => <IconButton><MenuIcon /></IconButton>;
+
+    renderMainContent = content => <div className={this.props.classes.mainContent}>{content}</div>;
 
     renderList = items => <List>{items.map(this.renderListItem)}</List>;
 
@@ -197,8 +202,12 @@ class Ui extends Component {
     renderDescriptionPage = (appBar, description) => (
         <Fragment>
             {appBar}
-            <Typography className={this.props.classes.pageDescription}>{description}</Typography>
+            {this.renderMainContent(this.renderDescription(description))}
         </Fragment>
+    );
+
+    renderDescription = description => (
+        <Typography className={this.props.classes.pageDescription}>{description}</Typography>
     );
 }
 

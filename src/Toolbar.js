@@ -1,21 +1,28 @@
 import React from 'react';
 import classNames from 'classnames';
-import AppBar from '@material-ui/core/AppBar';
 import { withStyles } from "@material-ui/core/styles";
 
-const styles = {
+const height = 56;
+
+const styles = theme => ({
     root: {
-        height: 56,
+        position: 'fixed',
+        zIndex: theme.zIndex.appBar,
+        width: '100%',
+        height,
         padding: 4,
+        backgroundColor: theme.palette.grey[900],
+        display: 'flex',
         flexDirection: 'row',
         alignItems: 'center'
     }
-};
+});
 
 let Toolbar = ({ classes, className, children }) => (
-    <AppBar position="static" elevation={0} color="default" className={classNames(classes.root, className)}>
+    <div className={classNames(classes.root, className)}>
         {children}
-    </AppBar>
+    </div>
 );
 
 export default withStyles(styles)(Toolbar);
+export { height };

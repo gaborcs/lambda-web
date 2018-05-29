@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import withScrolling from 'react-dnd-scrollzone';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import UndoIcon from '@material-ui/icons/Undo';
 import RedoIcon from '@material-ui/icons/Redo';
-import Toolbar from './Toolbar';
+import withScrolling from './scrollzone';
+import Toolbar, { height as toolbarHeight } from './Toolbar';
 import RenamableTitle from './RenamableTitle';
 import TreeEditor from './TreeEditor';
 import evaluator from './evaluator';
@@ -15,11 +15,6 @@ import evaluator from './evaluator';
 const lambdaChar = '\u03BB';
 
 const styles = ({
-    root: {
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%'
-    },
     appBarLeft: {
         flex: '1 1 auto',
         minWidth: 0,
@@ -28,12 +23,11 @@ const styles = ({
     appBarButtons: {
         flex: '0 0 auto'
     },
-    scrollingComponent: {
-        flex: 1,
-        padding: '8px 0',
-        overflow: 'auto'
+    tree: {
+        padding: (toolbarHeight + 8) + 'px 0'
     },
     bottomBar: {
+        bottom: 0,
         padding: '0 16px'
     }
 });
@@ -77,11 +71,12 @@ class ExpressionPage extends Component {
     };
 
     render = () => (
-        <div className={this.props.classes.root}>
+        <Fragment>
+            <ScrollingComponent scrollingElement />
             {this.renderAppBar()}
-            {this.renderScrollingContent()}
+            {this.renderTreeEditor()}
             {this.renderBottomBar()}
-        </div>
+        </Fragment>
     );
 
     renderAppBar = () => (
@@ -124,14 +119,9 @@ class ExpressionPage extends Component {
         </IconButton>
     );
 
-    renderScrollingContent = () => (
-        <ScrollingComponent className={this.props.classes.scrollingComponent}>
-            {this.renderTreeEditor()}
-        </ScrollingComponent>
-    );
-
     renderTreeEditor = () => (
         <TreeEditor
+            classes={{ tree: this.props.classes.tree }}
             expressionNames={this.props.expressions.map(expr => expr.name)}
             treeData={this.props.expression.treeDataHistory.present}
             setTreeData={this.addToHistory} />
