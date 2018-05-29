@@ -130,7 +130,7 @@ class ExpressionPage extends Component {
     renderBottomBar = () => (
         <Toolbar className={this.props.classes.bottomBar}>
             <Typography variant="subheading">
-                {this.eval().toString()}
+                {this.eval() + ''}
             </Typography>
         </Toolbar>
     );
