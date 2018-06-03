@@ -11,7 +11,7 @@ const styles = theme => ({
         width: '100%',
         height,
         padding: 4,
-        backgroundColor: theme.palette.grey[900],
+        backgroundColor: theme.palette.background.toolbar,
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center'

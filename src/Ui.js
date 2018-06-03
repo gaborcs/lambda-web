@@ -24,7 +24,12 @@ import initialExpressions from './initialExpressions.json';
 
 const theme = createMuiTheme({
     palette: {
-        type: 'dark'
+        type: 'dark',
+        background: {
+            default: '#222',
+            toolbar: '#111'
+        },
+        treeLine: '#444'
     }
 });
 

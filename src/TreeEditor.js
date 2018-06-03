@@ -23,7 +23,7 @@ const minTouchTargetSize = 48;
 const lambdaChar = '\u03BB';
 
 const styles = theme => {
-    let lineColor = theme.palette.grey[700];
+    let lineColor = theme.palette.treeLine;
     let lineColorBackground = { backgroundColor: lineColor };
     return {
         '@global': {
