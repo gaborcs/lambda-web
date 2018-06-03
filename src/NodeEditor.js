@@ -48,7 +48,7 @@ class NodeEditor extends Component {
     handleInputChange = event => {
         let { value } = event.target;
         this.setState({
-            input: value === '.' ? lambdaChar : value,
+            input: value === ' ' ? lambdaChar : value,
             selectedIndex: 0
         });
     };
@@ -116,7 +116,7 @@ class NodeEditor extends Component {
             <Typography variant="subheading" gutterBottom>Valid inputs</Typography>
             <Typography gutterBottom>Numbers: just enter the number</Typography>
             <Typography gutterBottom>References: select from the autocomplete list</Typography>
-            <Typography gutterBottom>Function signatures: start with ".", then enter the parameter name</Typography>
+            <Typography gutterBottom>Function signatures: press space, then enter the parameter name</Typography>
         </div>
     );
 
