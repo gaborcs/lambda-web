@@ -46,7 +46,7 @@ const styles = theme => {
         },
         chip: {
             minWidth: minTouchTargetSize,
-            fontSize: 14,
+            fontSize: 16,
             backgroundColor: 'transparent',
             border: '1px solid ' + lineColor
         },
