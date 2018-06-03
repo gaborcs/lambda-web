@@ -27,12 +27,16 @@ const styles = theme => {
     let lineColorBackground = { backgroundColor: lineColor };
     return {
         '@global': {
+            '.rst__lineHalfHorizontalRight': {
+                '&:first-child': { display: 'none' },
+            },
             '.rst__lineHalfHorizontalRight::before': lineColorBackground,
             '.rst__lineFullVertical::after': lineColorBackground,
             '.rst__lineHalfVerticalTop::after': lineColorBackground,
             '.rst__lineHalfVerticalBottom::after': lineColorBackground
         },
         tree: {
+            marginLeft: 16 - minTouchTargetSize,
             userSelect: 'none'
         },
         nodeContent: {
