@@ -1,7 +1,7 @@
 import specialForms from './specialForms';
 import primitiveFunctions from './primitiveFunctions';
 
-export default expressions => {
+const evaluator = expressions => {
     let evalWithEnv = env => node => {
         let { type, value } = node;
         let children = node.children || [];
@@ -40,3 +40,5 @@ export default expressions => {
     let evalNode = evalWithEnv({});
     return evalNode;
 };
+
+export default evaluator;
