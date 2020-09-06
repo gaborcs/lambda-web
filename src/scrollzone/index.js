@@ -243,7 +243,7 @@ export default function createScrollingComponent(WrappedComponent) {
         onScrollChange,
         scrollingElement,
 
-        ...props,
+        ...props
       } = this.props;
 
       return (
